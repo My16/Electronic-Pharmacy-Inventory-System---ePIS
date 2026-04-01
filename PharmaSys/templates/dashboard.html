@@ -1,0 +1,551 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ePIS — Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Summary Cards ───────────────────────────────── */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px; margin-bottom: 22px;
+    }
+
+    .stat-card {
+        background: #fff; border-radius: 14px;
+        padding: 18px 20px; display: flex;
+        align-items: center; gap: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7;
+        animation: slideUp .4s ease both;
+        text-decoration: none;
+        transition: box-shadow .2s, transform .15s;
+    }
+    .stat-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
+    .stat-card:nth-child(2) { animation-delay: .07s; }
+    .stat-card:nth-child(3) { animation-delay: .14s; }
+    .stat-card:nth-child(4) { animation-delay: .21s; }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-icon { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+    .stat-icon.teal   { background: rgba(0,173,181,.12);  color: #00ADB5; }
+    .stat-icon.green  { background: rgba(34,197,94,.12);  color: #16a34a; }
+    .stat-icon.orange { background: rgba(245,158,11,.12); color: #d97706; }
+    .stat-icon.red    { background: rgba(239,68,68,.12);  color: #dc2626; }
+    .stat-icon.blue   { background: rgba(59,130,246,.12); color: #2563eb; }
+    .stat-icon.purple { background: rgba(139,92,246,.12); color: #7c3aed; }
+
+    .stat-info  { display: flex; flex-direction: column; }
+    .stat-value { font-size: 26px; font-weight: 700; color: #1a2433; line-height: 1; }
+    .stat-label { font-size: 11.5px; color: #78909c; margin-top: 3px; font-weight: 500; }
+    .stat-sub   { font-size: 10.5px; color: #b0bec5; margin-top: 2px; }
+
+    /* ── Second Stats Row ────────────────────────────── */
+    .stats-row-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px; margin-bottom: 22px;
+    }
+
+    .stat-card-wide {
+        background: #fff; border-radius: 14px;
+        padding: 18px 22px; display: flex;
+        align-items: center; justify-content: space-between;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7;
+        animation: slideUp .4s ease .28s both;
+        transition: box-shadow .2s, transform .15s;
+    }
+    .stat-card-wide:hover { box-shadow: 0 6px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
+    .stat-card-wide:nth-child(2) { animation-delay: .35s; }
+
+    .stat-card-wide-left { display: flex; align-items: center; gap: 14px; }
+    .stat-card-wide-right { text-align: right; }
+    .stat-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+    .stat-badge.up   { background: rgba(34,197,94,.1);  color: #16a34a; }
+    .stat-badge.down { background: rgba(239,68,68,.1);  color: #dc2626; }
+
+    /* ── Main Layout ─────────────────────────────────── */
+    .dashboard-layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 18px;
+        align-items: start;
+    }
+
+    /* ── Chart Card ──────────────────────────────────── */
+    .chart-card {
+        background: #fff; border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7; overflow: hidden;
+        animation: slideUp .4s ease .2s both;
+    }
+    .chart-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 16px 20px; border-bottom: 1px solid #f0f4f8;
+        flex-wrap: wrap; gap: 10px;
+    }
+    .chart-title { font-size: 14px; font-weight: 700; color: #1a2433; display: flex; align-items: center; gap: 8px; }
+    .chart-title i { color: #00ADB5; }
+    .chart-body { padding: 20px; }
+    .chart-period-btns { display: flex; gap: 4px; }
+    .period-btn {
+        padding: 5px 12px; border-radius: 7px; border: 1px solid #e0e6ed;
+        background: #fff; font-size: 11.5px; font-weight: 600;
+        font-family: 'Poppins', sans-serif; color: #78909c; cursor: pointer;
+        transition: all .15s;
+    }
+    .period-btn.active { background: #00ADB5; border-color: #00ADB5; color: #fff; }
+    .period-btn:hover:not(.active) { background: #f0f4f8; }
+
+    /* ── Right Column ─────────────────────────────────── */
+    .right-col { display: flex; flex-direction: column; gap: 18px; }
+
+    /* ── Alert Panel ─────────────────────────────────── */
+    .panel-card {
+        background: #fff; border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7; overflow: hidden;
+        animation: slideUp .4s ease .25s both;
+    }
+    .panel-card:nth-child(2) { animation-delay: .32s; }
+
+    .panel-header {
+        display: flex; align-items: center; gap: 9px;
+        padding: 14px 18px; border-bottom: 1px solid #f0f4f8;
+        font-size: 13px; font-weight: 700; color: #1a2433;
+    }
+    .panel-header i { font-size: 13px; }
+    .panel-header.orange i { color: #d97706; }
+    .panel-header.red    i { color: #dc2626; }
+    .panel-header.teal   i { color: #00ADB5; }
+
+    .panel-badge { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+    .badge-orange { background: rgba(245,158,11,.12); color: #d97706; }
+    .badge-red    { background: rgba(239,68,68,.12);  color: #dc2626; }
+    .badge-teal   { background: rgba(0,173,181,.12);  color: #00ADB5; }
+
+    .panel-list { padding: 6px 0; max-height: 210px; overflow-y: auto; }
+    .panel-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 18px; font-size: 12.5px;
+        border-bottom: 1px solid #f8fafc; transition: background .15s;
+    }
+    .panel-item:last-child { border-bottom: none; }
+    .panel-item:hover { background: #f8fafc; }
+    .panel-item-name { font-weight: 600; color: #1a2433; font-size: 12.5px; }
+    .panel-item-sub  { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+    .panel-item-val  { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; }
+    .val-orange { background: rgba(245,158,11,.1); color: #d97706; }
+    .val-red    { background: rgba(239,68,68,.1);  color: #dc2626; }
+    .val-teal   { background: rgba(0,173,181,.1);  color: #00ADB5; }
+
+    .panel-empty { text-align: center; padding: 24px; color: #b0bec5; font-size: 12.5px; }
+    .panel-empty i { display: block; font-size: 22px; margin-bottom: 6px; color: #dde3ea; }
+
+    .panel-footer {
+        padding: 10px 18px; border-top: 1px solid #f0f4f8;
+        text-align: center;
+    }
+    .panel-footer a {
+        font-size: 12px; font-weight: 600; color: #00ADB5;
+        text-decoration: none; transition: color .15s;
+    }
+    .panel-footer a:hover { color: #008C9E; }
+
+    /* ── Stock Value Card ────────────────────────────── */
+    .value-card {
+        background: linear-gradient(135deg, #00ADB5 0%, #006d73 100%);
+        border-radius: 14px; padding: 22px 22px;
+        box-shadow: 0 4px 20px rgba(0,173,181,.3);
+        color: #fff; position: relative; overflow: hidden;
+        animation: slideUp .4s ease .1s both;
+    }
+    .value-card::before {
+        content: ''; position: absolute; top: -30px; right: -30px;
+        width: 120px; height: 120px; border-radius: 50%;
+        background: rgba(255,255,255,.08);
+    }
+    .value-card::after {
+        content: ''; position: absolute; bottom: -20px; right: 40px;
+        width: 80px; height: 80px; border-radius: 50%;
+        background: rgba(255,255,255,.05);
+    }
+    .value-card-label { font-size: 11.5px; font-weight: 600; opacity: .8; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+    .value-card-amount { font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+    .value-card-sub { font-size: 11.5px; opacity: .75; }
+    .value-card-icon { position: absolute; top: 18px; right: 20px; font-size: 28px; opacity: .2; }
+
+    /* ── Recent Movements Table ──────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead th {
+        background: #f8fafc; padding: 10px 16px; text-align: left;
+        font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .7px; color: #78909c; border-bottom: 1px solid #eef2f7;
+        white-space: nowrap;
+    }
+    .data-table tbody tr { border-bottom: 1px solid #f4f7fb; transition: background .15s; }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: #f8fafc; }
+    .data-table td { padding: 10px 16px; font-size: 12.5px; color: #1a2433; vertical-align: middle; }
+
+    .move-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .move-badge.in      { background: rgba(34,197,94,.1);  color: #16a34a; }
+    .move-badge.out     { background: rgba(239,68,68,.1);  color: #dc2626; }
+    .move-badge.adjust  { background: rgba(59,130,246,.1); color: #2563eb; }
+    .move-badge.expired { background: rgba(245,158,11,.1); color: #d97706; }
+    .move-badge.damaged { background: rgba(107,114,128,.1);color: #6b7280; }
+    .move-badge.return  { background: rgba(139,92,246,.1); color: #7c3aed; }
+    .move-badge.audit   { background: rgba(20,184,166,.1); color: #0f766e; }
+
+    .qty-pos { color: #16a34a; font-weight: 700; }
+    .qty-neg { color: #dc2626; font-weight: 700; }
+    .qty-neu { color: #2563eb; font-weight: 700; }
+
+    .empty-state { text-align: center; padding: 40px 20px; }
+    .empty-state i { font-size: 34px; margin-bottom: 10px; display: block; color: #d1d9e0; }
+    .empty-state p { font-size: 13px; color: #90a4ae; }
+
+    /* ── Quick Actions ───────────────────────────────── */
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px; }
+    .quick-btn {
+        display: flex; align-items: center; gap: 9px;
+        padding: 10px 12px; border-radius: 9px; border: 1px solid #e0e6ed;
+        background: #f8fafc; font-size: 12.5px; font-weight: 600;
+        font-family: 'Poppins', sans-serif; color: #1a2433; cursor: pointer;
+        text-decoration: none; transition: all .15s;
+    }
+    .quick-btn:hover { background: #f0f4f8; border-color: #cdd5df; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .quick-btn i { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+    .quick-btn .qi-teal   { background: rgba(0,173,181,.12);  color: #00ADB5; }
+    .quick-btn .qi-green  { background: rgba(34,197,94,.12);  color: #16a34a; }
+    .quick-btn .qi-orange { background: rgba(245,158,11,.12); color: #d97706; }
+    .quick-btn .qi-blue   { background: rgba(59,130,246,.12); color: #2563eb; }
+
+    /* ── Responsive ──────────────────────────────────── */
+    @media (max-width: 1100px) {
+        .stats-row { grid-template-columns: repeat(2, 1fr); }
+        .dashboard-layout { grid-template-columns: 1fr; }
+        .right-col { display: grid; grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+        .stats-row, .stats-row-2, .right-col { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ── Summary Cards ── -->
+<div class="stats-row">
+    <a class="stat-card" href="{% url 'inventory' %}">
+        <div class="stat-icon teal"><i class="fas fa-pills"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ total_medicines }}</span>
+            <span class="stat-label">Total Medicines</span>
+            <span class="stat-sub">Active items</span>
+        </div>
+    </a>
+    <a class="stat-card" href="{% url 'inventory' %}?status=low_stock">
+        <div class="stat-icon orange"><i class="fas fa-triangle-exclamation"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ low_stock_count }}</span>
+            <span class="stat-label">Low Stock</span>
+            <span class="stat-sub">Needs reorder</span>
+        </div>
+    </a>
+    <a class="stat-card" href="{% url 'inventory' %}?status=out_of_stock">
+        <div class="stat-icon red"><i class="fas fa-ban"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ out_of_stock_count }}</span>
+            <span class="stat-label">Out of Stock</span>
+            <span class="stat-sub">Zero quantity</span>
+        </div>
+    </a>
+    <a class="stat-card" href="{% url 'inventory' %}?status=expiring">
+        <div class="stat-icon orange"><i class="fas fa-calendar-xmark"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ expiring_soon_count }}</span>
+            <span class="stat-label">Expiring Soon</span>
+            <span class="stat-sub">Within 90 days</span>
+        </div>
+    </a>
+</div>
+
+<!-- ── Stock Value + Daily Sales ── -->
+<div class="stats-row-2">
+    <!-- Total Stock Value -->
+    <div class="value-card">
+        <i class="fas fa-peso-sign value-card-icon"></i>
+        <div class="value-card-label">Total Stock Value</div>
+        <div class="value-card-amount">₱{{ total_stock_value|floatformat:2 }}</div>
+        <div class="value-card-sub">Based on selling price × quantity</div>
+    </div>
+    <!-- Today's Movements -->
+    <div class="stat-card-wide" style="cursor:default;">
+        <div class="stat-card-wide-left">
+            <div class="stat-icon blue"><i class="fas fa-arrows-rotate"></i></div>
+            <div class="stat-info">
+                <span class="stat-value">{{ total_movements_today }}</span>
+                <span class="stat-label">Movements Today</span>
+                <span class="stat-sub">Stock in / out / adjustments</span>
+            </div>
+        </div>
+        <div class="stat-card-wide-right">
+            <div style="font-size:12px;color:#64748b;font-weight:600;margin-bottom:4px;">
+                <span style="color:#16a34a;">+{{ total_in_today }}</span> in &nbsp;·&nbsp;
+                <span style="color:#dc2626;">-{{ total_out_today }}</span> out
+            </div>
+            <a href="{% url 'stock_management' %}" style="font-size:11.5px;color:#00ADB5;font-weight:600;text-decoration:none;">
+                View history <i class="fas fa-arrow-right" style="font-size:10px;"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── Main Layout ── -->
+<div class="dashboard-layout">
+
+    <!-- LEFT: Chart + Recent Movements -->
+    <div style="display:flex;flex-direction:column;gap:18px;">
+
+        <!-- Monthly Sales Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title"><i class="fas fa-chart-line"></i>Stock Movement Trend</div>
+                <div class="chart-period-btns">
+                    <button class="period-btn active" onclick="switchPeriod('monthly', this)">Monthly</button>
+                    <button class="period-btn" onclick="switchPeriod('weekly', this)">Weekly</button>
+                </div>
+            </div>
+            <div class="chart-body">
+                <canvas id="movementChart" height="110"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Stock Movements -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title"><i class="fas fa-clock-rotate-left"></i>Recent Movements</div>
+                <a href="{% url 'stock_management' %}" style="font-size:12px;font-weight:600;color:#00ADB5;text-decoration:none;">
+                    View all <i class="fas fa-arrow-right" style="font-size:10px;"></i>
+                </a>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr><th>Date</th><th>Medicine</th><th>Type</th><th>Qty</th><th>By</th></tr>
+                </thead>
+                <tbody>
+                    {% for mv in recent_movements %}
+                    <tr>
+                        <td style="white-space:nowrap;">
+                            <div style="font-size:12px;font-weight:600;color:#1a2433;">{{ mv.created_at|date:"M d" }}</div>
+                            <div style="font-size:10.5px;color:#94a3b8;">{{ mv.created_at|date:"h:i A" }}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600;font-size:12.5px;">{{ mv.medicine.medicine_name }}</div>
+                            <div style="font-size:11px;color:#94a3b8;">{{ mv.medicine.strength }}</div>
+                        </td>
+                        <td>
+                            <span class="move-badge {{ mv.movement_type }}">
+                                {% if mv.movement_type == 'in' %}<i class="fas fa-arrow-down"></i> Stock In
+                                {% elif mv.movement_type == 'out' %}<i class="fas fa-arrow-up"></i> Dispensed
+                                {% elif mv.movement_type == 'adjust' %}<i class="fas fa-sliders"></i> Adjust
+                                {% elif mv.movement_type == 'return' %}<i class="fas fa-rotate-left"></i> Return
+                                {% elif mv.movement_type == 'expired' %}<i class="fas fa-calendar-xmark"></i> Expired
+                                {% elif mv.movement_type == 'damaged' %}<i class="fas fa-trash-can"></i> Damaged
+                                {% elif mv.movement_type == 'audit' %}<i class="fas fa-clipboard-check"></i> Audit
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="{% if mv.quantity > 0 %}qty-pos{% elif mv.quantity < 0 %}qty-neg{% else %}qty-neu{% endif %}">
+                                {% if mv.quantity > 0 %}+{% endif %}{{ mv.quantity }}
+                            </span>
+                        </td>
+                        <td style="font-size:12px;color:#64748b;">
+                            {{ mv.performed_by.get_full_name|default:mv.performed_by.username|default:"System" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5"><div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>No movements yet.</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- RIGHT: Alerts + Quick Actions -->
+    <div class="right-col">
+
+        <!-- Quick Actions -->
+        <div class="panel-card">
+            <div class="panel-header teal"><i class="fas fa-bolt"></i>Quick Actions</div>
+            <div class="quick-actions">
+                <a class="quick-btn" href="{% url 'inventory' %}">
+                    <i class="fas fa-pills qi-teal"></i>Inventory
+                </a>
+                <a class="quick-btn" href="{% url 'stock_management' %}">
+                    <i class="fas fa-arrow-circle-down qi-green"></i>Stock In
+                </a>
+                <a class="quick-btn" href="{% url 'stock_management' %}">
+                    <i class="fas fa-arrow-circle-up qi-orange"></i>Stock Out
+                </a>
+                <a class="quick-btn" href="{% url 'inventory' %}?status=expiring">
+                    <i class="fas fa-calendar-xmark qi-blue"></i>Expiring
+                </a>
+            </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="panel-card">
+            <div class="panel-header orange">
+                <i class="fas fa-triangle-exclamation"></i>Low Stock
+                <span class="panel-badge badge-orange">{{ low_stock_count }}</span>
+            </div>
+            <div class="panel-list">
+                {% for m in low_stock_items %}
+                <div class="panel-item">
+                    <div>
+                        <div class="panel-item-name">{{ m.medicine_name }}</div>
+                        <div class="panel-item-sub">Reorder at {{ m.reorder_level }}</div>
+                    </div>
+                    <span class="panel-item-val val-orange">{{ m.stock_quantity }} left</span>
+                </div>
+                {% empty %}
+                <div class="panel-empty"><i class="fas fa-check-circle" style="color:#4ade80;"></i>All stocks sufficient</div>
+                {% endfor %}
+            </div>
+            {% if low_stock_count > 0 %}
+            <div class="panel-footer">
+                <a href="{% url 'inventory' %}?status=low_stock">View all low stock →</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Expiring Soon -->
+        <div class="panel-card">
+            <div class="panel-header red">
+                <i class="fas fa-calendar-xmark"></i>Expiring Soon
+                <span class="panel-badge badge-red">{{ expiring_soon_count }}</span>
+            </div>
+            <div class="panel-list">
+                {% for m in expiring_items %}
+                <div class="panel-item">
+                    <div>
+                        <div class="panel-item-name">{{ m.medicine_name }}</div>
+                        <div class="panel-item-sub">{{ m.strength }}</div>
+                    </div>
+                    <span class="panel-item-val val-red">{{ m.expiry_date|date:"M d, Y" }}</span>
+                </div>
+                {% empty %}
+                <div class="panel-empty"><i class="fas fa-check-circle" style="color:#4ade80;"></i>No medicines expiring soon</div>
+                {% endfor %}
+            </div>
+            {% if expiring_soon_count > 0 %}
+            <div class="panel-footer">
+                <a href="{% url 'inventory' %}?status=expiring">View all expiring →</a>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── Chart Data from Django ────────────────────────────────────
+const monthlyLabels = {{ monthly_labels|safe }};
+const monthlyIn     = {{ monthly_in|safe }};
+const monthlyOut    = {{ monthly_out|safe }};
+const weeklyLabels  = {{ weekly_labels|safe }};
+const weeklyIn      = {{ weekly_in|safe }};
+const weeklyOut     = {{ weekly_out|safe }};
+
+// ── Chart Setup ───────────────────────────────────────────────
+const ctx = document.getElementById('movementChart').getContext('2d');
+
+const chartData = {
+    monthly: { labels: monthlyLabels, inData: monthlyIn, outData: monthlyOut },
+    weekly:  { labels: weeklyLabels,  inData: weeklyIn,  outData: weeklyOut  },
+};
+
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: monthlyLabels,
+        datasets: [
+            {
+                label: 'Stock In',
+                data: monthlyIn,
+                backgroundColor: 'rgba(22,163,74,.7)',
+                borderRadius: 5,
+                borderSkipped: false,
+            },
+            {
+                label: 'Stock Out',
+                data: monthlyOut,
+                backgroundColor: 'rgba(220,38,38,.6)',
+                borderRadius: 5,
+                borderSkipped: false,
+            },
+        ],
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: { family: 'Poppins', size: 11 },
+                    usePointStyle: true, pointStyleWidth: 8,
+                    color: '#64748b',
+                }
+            },
+            tooltip: {
+                backgroundColor: '#1a2433',
+                titleFont: { family: 'Poppins', size: 12 },
+                bodyFont:  { family: 'Poppins', size: 12 },
+                padding: 10, cornerRadius: 8,
+            }
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { font: { family: 'Poppins', size: 11 }, color: '#94a3b8' }
+            },
+            y: {
+                beginAtZero: true,
+                grid: { color: '#f0f4f8' },
+                ticks: { font: { family: 'Poppins', size: 11 }, color: '#94a3b8', precision: 0 }
+            }
+        },
+        barPercentage: 0.6,
+        categoryPercentage: 0.7,
+    }
+});
+
+function switchPeriod(period, btn) {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const d = chartData[period];
+    chart.data.labels       = d.labels;
+    chart.data.datasets[0].data = d.inData;
+    chart.data.datasets[1].data = d.outData;
+    chart.update('active');
+}
+</script>
+{% endblock %}

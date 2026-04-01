@@ -1,0 +1,521 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ePIS — User Management{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block breadcrumb %}User Management{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_management.css' %}">
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ── Summary Cards ──────────────────────────────────────────── -->
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-icon teal"><i class="fas fa-users"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ total_users }}</span>
+            <span class="stat-label">Total Users</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ active_users }}</span>
+            <span class="stat-label">Active Users</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon red"><i class="fas fa-user-xmark"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ inactive_users }}</span>
+            <span class="stat-label">Inactive Users</span>
+        </div>
+    </div>
+</div>
+
+<!-- ── Users Table ────────────────────────────────────────────── -->
+<div class="table-card">
+    <div class="table-toolbar">
+        <div class="toolbar-left">
+            <span class="table-title">System Users</span>
+            <span class="user-count-badge">{{ total_users }} total</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <form method="GET" action="">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="search"
+                           placeholder="Search users..."
+                           value="{{ search_query }}"
+                           autocomplete="off">
+                </div>
+            </form>
+            <button class="btn-add" onclick="openAddModal()">
+                <i class="fas fa-plus"></i> Add User
+            </button>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Date Joined</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td style="color:#b0bec5; font-size:12px;">{{ forloop.counter }}</td>
+
+                <!-- User -->
+                <td>
+                    <div class="user-cell">
+                        {% if u.profile.avatar %}
+                            <img src="{{ u.profile.avatar.url }}" class="table-avatar" alt="">
+                        {% else %}
+                            <div class="table-avatar">
+                                {% if u.first_name %}{{ u.first_name|first|upper }}{{ u.last_name|first|upper }}
+                                {% else %}{{ u.username|first|upper }}{% endif %}
+                            </div>
+                        {% endif %}
+                        <div class="user-cell-info">
+                            <span class="user-full-name">
+                                {{ u.profile.get_full_name_with_middle|default:u.username }}
+                            </span>
+                            <span class="user-username">@{{ u.username }}</span>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Email -->
+                <td style="color:#64748b;">{{ u.email|default:"—" }}</td>
+
+                <!-- Role -->
+                <td>
+                    {% with role=u.profile.role %}
+                    {% if role == 'admin' %}
+                        <span class="role-badge admin"><i class="fas fa-shield-halved"></i> Administrator</span>
+                    {% elif role == 'staff' %}
+                        <span class="role-badge staff"><i class="fas fa-user-tie"></i> Staff</span>
+                    {% else %}
+                        <span class="role-badge user"><i class="fas fa-user"></i> User</span>
+                    {% endif %}
+                    {% endwith %}
+                </td>
+
+                <!-- Status — badge only, no extra button here -->
+                <td>
+                    <span class="status-badge {% if u.is_active %}active{% else %}inactive{% endif %}">
+                        <span class="status-dot"></span>
+                        {% if u.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </td>
+
+                <!-- Date Joined -->
+                <td style="color:#64748b; font-size:12.5px;">
+                    {{ u.date_joined|date:"M d, Y" }}
+                </td>
+
+                <!-- Actions -->
+                <td>
+                    <div class="action-btns">
+
+                        <!-- Edit -->
+                        <button class="btn-icon edit"
+                                title="Edit User"
+                                data-pk="{{ u.pk }}"
+                                data-first="{{ u.first_name|escapejs }}"
+                                data-middle="{{ u.profile.middle_name|escapejs }}"
+                                data-last="{{ u.last_name|escapejs }}"
+                                data-email="{{ u.email|escapejs }}"
+                                data-username="{{ u.username|escapejs }}"
+                                data-role="{{ u.profile.role }}"
+                                data-is-active="{{ u.is_active|yesno:'true,false' }}"
+                                onclick="openEditModal(this)">
+                            <i class="fas fa-pen-to-square"></i>
+                        </button>
+
+                        <!-- Toggle Active -->
+                        {% if u != request.user %}
+                        <button class="btn-icon {% if u.is_active %}toggle-on{% else %}toggle-off{% endif %}"
+                                title="{% if u.is_active %}Deactivate{% else %}Activate{% endif %} User"
+                                data-pk="{{ u.pk }}"
+                                data-active="{{ u.is_active|yesno:'true,false' }}"
+                                data-name="{{ u.get_full_name|default:u.username|escapejs }}"
+                                onclick="toggleUser(this)">
+                            <i class="fas {% if u.is_active %}fa-toggle-on{% else %}fa-toggle-off{% endif %}"></i>
+                        </button>
+                        {% else %}
+                        <button class="btn-icon toggle-on" disabled title="Cannot deactivate yourself">
+                            <i class="fas fa-toggle-on"></i>
+                        </button>
+                        {% endif %}
+
+                        <!-- Delete -->
+                        {% if u != request.user %}
+                        <button class="btn-icon delete"
+                                title="Delete User"
+                                data-pk="{{ u.pk }}"
+                                data-name="{{ u.get_full_name|default:u.username|escapejs }}"
+                                onclick="openDeleteModal(this)">
+                            <i class="fas fa-trash-can"></i>
+                        </button>
+                        {% else %}
+                        <button class="btn-icon delete" disabled title="Cannot delete yourself">
+                            <i class="fas fa-trash-can"></i>
+                        </button>
+                        {% endif %}
+
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">
+                    <div class="empty-state">
+                        <i class="fas fa-users-slash"></i>
+                        <p>No users found{% if search_query %} for "<strong>{{ search_query }}</strong>"{% endif %}.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     ADD USER MODAL
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-user-plus"></i> Add New User</div>
+            <button class="modal-close" onclick="closeModal('addModal')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <form method="POST" action="{% url 'user_add' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+
+                <!-- Name row -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name <span style="color:#dc2626;">*</span></label>
+                        <input type="text" name="first_name" class="form-control" placeholder="Juan" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name <span style="color:#dc2626;">*</span></label>
+                        <input type="text" name="last_name" class="form-control" placeholder="Dela Cruz" required>
+                    </div>
+                </div>
+
+                <!-- Middle name -->
+                <div class="form-group">
+                    <label class="form-label">Middle Name <span style="color:#b0bec5; font-weight:400;">(optional)</span></label>
+                    <input type="text" name="middle_name" class="form-control" placeholder="Santos">
+                </div>
+
+                <!-- Username -->
+                <div class="form-group">
+                    <label class="form-label">Username <span style="color:#dc2626;">*</span></label>
+                    <input type="text" name="username" class="form-control" placeholder="juan.delacruz" required>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" class="form-control" placeholder="juan@mharsmc.gov.ph">
+                </div>
+
+                <!-- Password -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Password <span style="color:#dc2626;">*</span></label>
+                        <input type="password" name="password" id="add_password"
+                               class="form-control" placeholder="Min. 8 characters" required
+                               oninput="checkAddMatch()">
+                        <span class="pw-hint">At least 8 characters</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password <span style="color:#dc2626;">*</span></label>
+                        <input type="password" name="confirm_password" id="add_confirm"
+                               class="form-control" placeholder="Re-enter password" required
+                               oninput="checkAddMatch()">
+                        <span class="pw-match" id="add_pw_match"></span>
+                    </div>
+                </div>
+
+                <!-- Role -->
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select name="role" class="form-control">
+                        <option value="user">User</option>
+                        <option value="staff">Staff</option>
+                        <option value="admin">Administrator</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal('addModal')">Cancel</button>
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-plus" style="margin-right:6px;"></i>Create User
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     EDIT USER MODAL
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-pen-to-square"></i> Edit User</div>
+            <button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <form method="POST" id="editForm" action="">
+            {% csrf_token %}
+            <div class="modal-body">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name <span style="color:#dc2626;">*</span></label>
+                        <input type="text" name="first_name" id="edit_first_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name <span style="color:#dc2626;">*</span></label>
+                        <input type="text" name="last_name" id="edit_last_name" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Middle Name <span style="color:#b0bec5; font-weight:400;">(optional)</span></label>
+                    <input type="text" name="middle_name" id="edit_middle_name" class="form-control" placeholder="Santos">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="edit_username" class="form-control" disabled
+                           style="background:#f0f4f8; color:#90a4ae; cursor:not-allowed;">
+                    <small style="font-size:11px; color:#b0bec5; margin-top:3px; display:block;">Username cannot be changed.</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" name="email" id="edit_email" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">New Password
+                        <span style="color:#b0bec5; font-weight:400;">(leave blank to keep current)</span>
+                    </label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter new password">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Role</label>
+                        <select name="role" id="edit_role" class="form-control">
+                            <option value="user">User</option>
+                            <option value="staff">Staff</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:flex-end; padding-bottom:2px;">
+                        <label class="form-check">
+                            <input type="checkbox" name="is_active" id="edit_is_active">
+                            Active Account
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal('editModal')">Cancel</button>
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-floppy-disk" style="margin-right:6px;"></i>Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     DELETE CONFIRM MODAL
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal modal-sm">
+        <div class="delete-body">
+            <div class="delete-icon"><i class="fas fa-trash-can"></i></div>
+            <div class="delete-title">Delete User</div>
+            <p class="delete-msg">
+                Are you sure you want to delete <strong id="deleteUserName"></strong>?
+                This action cannot be undone.
+            </p>
+        </div>
+        <form method="POST" id="deleteForm" action="">
+            {% csrf_token %}
+            <div class="modal-footer" style="justify-content:center; gap:12px;">
+                <button type="button" class="btn-cancel" onclick="closeModal('deleteModal')">Cancel</button>
+                <button type="submit" class="btn-danger">
+                    <i class="fas fa-trash-can" style="margin-right:6px;"></i>Yes, Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <i class="fas fa-circle-check"></i>
+    <span id="toastMsg"></span>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    const URLS = {
+        user_edit:   "{% url 'user_edit' pk=0 %}".replace('/0/', '/'),
+        user_delete: "{% url 'user_delete' pk=0 %}".replace('/0/', '/'),
+        user_toggle: "{% url 'user_toggle_active' pk=0 %}".replace('/0/', '/'),
+    };
+
+    // ── Modal helpers ────────────────────────────────────────────
+    function openModal(id)  { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) overlay.classList.remove('open');
+        });
+    });
+
+    // ── Add Modal ────────────────────────────────────────────────
+    function openAddModal() { openModal('addModal'); }
+
+    // Password match check for Add modal
+    function checkAddMatch() {
+        const pw  = document.getElementById('add_password').value;
+        const cpw = document.getElementById('add_confirm').value;
+        const msg = document.getElementById('add_pw_match');
+        if (!cpw) { msg.textContent = ''; return; }
+        if (pw === cpw) {
+            msg.textContent = '✓ Passwords match';
+            msg.className = 'pw-match ok';
+        } else {
+            msg.textContent = '✗ Passwords do not match';
+            msg.className = 'pw-match bad';
+        }
+    }
+
+    // ── Edit Modal ───────────────────────────────────────────────
+    function openEditModal(btn) {
+        const pk       = btn.dataset.pk;
+        const isActive = btn.dataset.isActive === 'true';
+
+        document.getElementById('editForm').action            = URLS.user_edit + pk + '/';
+        document.getElementById('edit_first_name').value      = btn.dataset.first;
+        document.getElementById('edit_middle_name').value     = btn.dataset.middle;
+        document.getElementById('edit_last_name').value       = btn.dataset.last;
+        document.getElementById('edit_email').value           = btn.dataset.email;
+        document.getElementById('edit_username').value        = btn.dataset.username;
+        document.getElementById('edit_role').value            = btn.dataset.role;
+        document.getElementById('edit_is_active').checked     = isActive;
+
+        openModal('editModal');
+    }
+
+    // ── Delete Modal ─────────────────────────────────────────────
+    function openDeleteModal(btn) {
+        document.getElementById('deleteForm').action          = URLS.user_delete + btn.dataset.pk + '/';
+        document.getElementById('deleteUserName').textContent = btn.dataset.name;
+        openModal('deleteModal');
+    }
+
+    // ── Toggle Active (AJAX) ─────────────────────────────────────
+    function toggleUser(btn) {
+        const pk   = btn.dataset.pk;
+        const name = btn.dataset.name;
+
+        // Disable button immediately to prevent double-click
+        btn.disabled = true;
+
+        fetch(URLS.user_toggle + pk + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // Update button and badge in-place without full reload
+                const row        = btn.closest('tr');
+                const statusCell = row.querySelector('.status-badge');
+                const toggleIcon = btn.querySelector('i');
+
+                if (data.is_active) {
+                    statusCell.className = 'status-badge active';
+                    statusCell.innerHTML = '<span class="status-dot"></span> Active';
+                    btn.className        = 'btn-icon toggle-on';
+                    btn.title            = 'Deactivate User';
+                    toggleIcon.className = 'fas fa-toggle-on';
+                    btn.dataset.active   = 'true';
+                } else {
+                    statusCell.className = 'status-badge inactive';
+                    statusCell.innerHTML = '<span class="status-dot"></span> Inactive';
+                    btn.className        = 'btn-icon toggle-off';
+                    btn.title            = 'Activate User';
+                    toggleIcon.className = 'fas fa-toggle-off';
+                    btn.dataset.active   = 'false';
+                }
+                btn.disabled = false;
+            } else {
+                showToast(data.error || 'Something went wrong.', 'error');
+                btn.disabled = false;
+            }
+        })
+        .catch(() => {
+            showToast('Network error. Please try again.', 'error');
+            btn.disabled = false;
+        });
+    }
+
+    // ── Toast ────────────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+        const toast = document.getElementById('toast');
+        const icon  = toast.querySelector('i');
+        document.getElementById('toastMsg').textContent = msg;
+        toast.className = `toast ${type}`;
+        icon.className  = type === 'success' ? 'fas fa-circle-check' : 'fas fa-circle-xmark';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // ── Auto-show Django messages as toast ───────────────────────
+    {% if messages %}
+        {% for message in messages %}
+            showToast("{{ message|escapejs }}", "{% if 'error' in message.tags %}error{% else %}success{% endif %}");
+        {% endfor %}
+    {% endif %}
+</script>
+{% endblock %}

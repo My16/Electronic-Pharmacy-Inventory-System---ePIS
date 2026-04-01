@@ -1,0 +1,775 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% load app_extras %}
+
+{% block title %}ePIS — Stock Management{% endblock %}
+{% block page_title %}Stock Management{% endblock %}
+{% block breadcrumb %}Stock Management{% endblock %}
+{% block nav_stock %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Summary Cards ───────────────────────────────── */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:22px; }
+    .stat-card { background:#fff; border-radius:14px; padding:18px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #eef2f7; animation:slideUp .4s ease both; }
+    .stat-card:nth-child(2){animation-delay:.07s}.stat-card:nth-child(3){animation-delay:.14s}.stat-card:nth-child(4){animation-delay:.21s}
+    @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    .stat-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+    .stat-icon.green{background:rgba(34,197,94,.12);color:#16a34a}.stat-icon.red{background:rgba(239,68,68,.12);color:#dc2626}
+    .stat-icon.blue{background:rgba(59,130,246,.12);color:#2563eb}.stat-icon.teal{background:rgba(0,173,181,.12);color:#00ADB5}
+    .stat-info{display:flex;flex-direction:column}.stat-value{font-size:26px;font-weight:700;color:#1a2433;line-height:1}
+    .stat-label{font-size:11.5px;color:#78909c;margin-top:3px;font-weight:500}.stat-sub{font-size:10.5px;color:#b0bec5;margin-top:1px}
+
+    /* ── Layout ──────────────────────────────────────── */
+    .stock-layout { display:grid; grid-template-columns:400px 1fr; gap:18px; align-items:start; }
+
+    /* ── Tab Card ────────────────────────────────────── */
+    .tab-card { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #eef2f7; overflow:hidden; animation:slideUp .4s ease .1s both; position:sticky; top:80px; }
+    .tab-header { display:flex; border-bottom:1px solid #f0f4f8; }
+    .tab-btn { flex:1; padding:13px 6px; border:none; background:transparent; font-size:11.5px; font-weight:700; font-family:'Poppins',sans-serif; color:#94a3b8; cursor:pointer; border-bottom:2px solid transparent; transition:color .2s,border-color .2s,background .2s; display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .tab-btn i{font-size:15px}.tab-btn:hover{color:#1a2433;background:#fafbfc}
+    .tab-btn.active.in-tab{color:#16a34a;border-color:#16a34a}.tab-btn.active.out-tab{color:#dc2626;border-color:#dc2626}.tab-btn.active.adj-tab{color:#2563eb;border-color:#2563eb}
+    .tab-pane{display:none}.tab-pane.active{display:block}
+    .tab-body{padding:18px}
+
+    /* ── Searchable Medicine Picker ──────────────────── */
+    .med-picker { position:relative; margin-bottom:14px; }
+    .med-picker-label { font-size:11.5px; font-weight:600; color:#64748b; margin-bottom:4px; display:block; letter-spacing:.3px; }
+
+    .med-picker-input-wrap {
+        display:flex; align-items:center;
+        border:1px solid #e0e6ed; border-radius:8px;
+        background:#f8fafc; transition:border-color .2s, box-shadow .2s;
+        overflow:hidden;
+    }
+    .med-picker-input-wrap:focus-within {
+        border-color:#00ADB5; box-shadow:0 0 0 3px rgba(0,173,181,.1); background:#fff;
+    }
+
+    .med-picker-search {
+        flex:1; border:none; background:transparent;
+        padding:9px 11px; font-size:13px;
+        font-family:'Poppins',sans-serif; color:#1a2433;
+        outline:none;
+    }
+
+    .med-picker-scan-btn {
+        width:36px; height:36px; border:none;
+        background:transparent; color:#94a3b8;
+        cursor:pointer; display:flex; align-items:center;
+        justify-content:center; font-size:14px;
+        transition:color .2s, background .2s;
+        flex-shrink:0;
+    }
+    .med-picker-scan-btn:hover { color:#00ADB5; background:rgba(0,173,181,.08); }
+
+    .med-picker-dropdown {
+        display:none; position:absolute; top:100%; left:0; right:0;
+        background:#fff; border:1px solid #e0e6ed; border-top:none;
+        border-radius:0 0 10px 10px;
+        box-shadow:0 8px 24px rgba(0,0,0,.1);
+        max-height:220px; overflow-y:auto; z-index:500;
+    }
+    .med-picker-dropdown.open { display:block; }
+
+    .med-option {
+        padding:10px 14px; cursor:pointer;
+        transition:background .15s; border-bottom:1px solid #f4f7fb;
+        font-size:12.5px;
+    }
+    .med-option:last-child{border-bottom:none}
+    .med-option:hover { background:#f0f4f8; }
+    .med-option-name { font-weight:600; color:#1a2433; }
+    .med-option-sub  { font-size:11px; color:#94a3b8; margin-top:1px; }
+
+    .med-option-stock {
+        float:right; font-size:11.5px; font-weight:700;
+        padding:2px 7px; border-radius:5px; margin-top:2px;
+    }
+    .stock-ok  { background:rgba(34,197,94,.1);  color:#16a34a; }
+    .stock-low { background:rgba(245,158,11,.1); color:#d97706; }
+    .stock-out { background:rgba(239,68,68,.1);  color:#dc2626; }
+
+    .med-picker-empty {
+        padding:14px; text-align:center;
+        font-size:12.5px; color:#94a3b8;
+    }
+
+    /* Hidden real input sent with form */
+    .med-picker-hidden { display:none; }
+
+    /* Selected medicine info card */
+    .med-info-card {
+        display:none; background:#f0f9ff;
+        border:1px solid #bae6fd; border-radius:9px;
+        padding:12px 14px; margin-bottom:14px;
+        font-size:12.5px;
+    }
+    .med-info-card.show { display:block; }
+    .med-info-card-name { font-weight:700; color:#0369a1; font-size:13px; }
+    .med-info-card-row  { display:flex; gap:16px; margin-top:6px; flex-wrap:wrap; }
+    .med-info-item      { display:flex; flex-direction:column; gap:1px; }
+    .med-info-item-label{ font-size:10.5px; color:#78909c; font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+    .med-info-item-value{ font-size:12.5px; font-weight:700; color:#1a2433; }
+    .med-info-item-value.red    { color:#dc2626; }
+    .med-info-item-value.orange { color:#d97706; }
+    .med-info-item-value.green  { color:#16a34a; }
+
+    /* Form elements */
+    .form-group{margin-bottom:13px}
+    .form-label{display:block;font-size:11.5px;font-weight:600;color:#64748b;margin-bottom:4px;letter-spacing:.3px}
+    .form-control{width:100%;padding:9px 11px;border:1px solid #e0e6ed;border-radius:8px;font-size:13px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#f8fafc;transition:border-color .2s,box-shadow .2s}
+    .form-control:focus{border-color:#00ADB5;box-shadow:0 0 0 3px rgba(0,173,181,.1);background:#fff}
+    select.form-control{cursor:pointer}
+    textarea.form-control{resize:vertical;min-height:70px}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+    .toggle-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px;font-weight:600;color:#64748b;cursor:pointer}
+    .toggle-row input[type="checkbox"]{accent-color:#00ADB5;width:15px;height:15px;cursor:pointer}
+    .batch-fields{background:#f8fafc;border:1px dashed #e0e6ed;border-radius:10px;padding:14px;margin-bottom:12px;display:none}
+    .batch-fields.show{display:block}
+
+    .form-divider{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#00ADB5;margin:14px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f4f8}
+
+    .btn-stock-in{width:100%;padding:10px;border:none;border-radius:9px;background:#16a34a;color:#fff;font-size:13.5px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s;box-shadow:0 2px 8px rgba(22,163,74,.25);display:flex;align-items:center;justify-content:center;gap:7px}
+    .btn-stock-in:hover{background:#15803d}
+    .btn-stock-out{width:100%;padding:10px;border:none;border-radius:9px;background:#dc2626;color:#fff;font-size:13.5px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s;box-shadow:0 2px 8px rgba(220,38,38,.25);display:flex;align-items:center;justify-content:center;gap:7px}
+    .btn-stock-out:hover{background:#b91c1c}
+    .btn-adjust{width:100%;padding:10px;border:none;border-radius:9px;background:#2563eb;color:#fff;font-size:13.5px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s;box-shadow:0 2px 8px rgba(37,99,235,.25);display:flex;align-items:center;justify-content:center;gap:7px}
+    .btn-adjust:hover{background:#1d4ed8}
+
+    /* ── History Card ────────────────────────────────── */
+    .history-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #eef2f7;overflow:hidden;animation:slideUp .4s ease .15s both}
+    .history-toolbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f0f4f8;gap:10px;flex-wrap:wrap}
+    .history-title{font-size:14px;font-weight:700;color:#1a2433;display:flex;align-items:center;gap:8px}
+    .history-title i{color:#00ADB5}
+    .count-badge{background:rgba(0,173,181,.1);color:#00ADB5;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+    .per-page-wrap{display:flex;align-items:center;gap:6px;font-size:12px;color:#78909c}
+    .per-page-wrap select{border:1px solid #e0e6ed;border-radius:6px;padding:4px 8px;font-size:12px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#fff;cursor:pointer}
+
+    .filter-bar{display:flex;align-items:center;gap:8px;padding:11px 20px;border-bottom:1px solid #f0f4f8;background:#fafbfc;flex-wrap:wrap}
+    .filter-label{font-size:11px;font-weight:700;color:#78909c}
+    .filter-select,.filter-input{border:1px solid #e0e6ed;border-radius:7px;padding:6px 10px;font-size:12px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#fff;cursor:pointer;transition:border-color .2s}
+    .filter-select:focus,.filter-input:focus{border-color:#00ADB5}
+    .filter-input{cursor:text;width:130px}
+    .btn-filter{padding:6px 14px;border-radius:7px;border:none;background:#00ADB5;color:#fff;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s}
+    .btn-filter:hover{background:#008C9E}
+    .btn-clear{padding:6px 10px;border-radius:7px;border:1px solid #e0e6ed;background:#fff;color:#dc2626;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;text-decoration:none}
+
+    .data-table{width:100%;border-collapse:collapse}
+    .data-table thead th{background:#f8fafc;padding:10px 14px;text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#78909c;border-bottom:1px solid #eef2f7;white-space:nowrap}
+    .data-table tbody tr{border-bottom:1px solid #f4f7fb;transition:background .15s}
+    .data-table tbody tr:last-child{border-bottom:none}
+    .data-table tbody tr:hover{background:#f8fafc}
+    .data-table td{padding:11px 14px;font-size:12.5px;color:#1a2433;vertical-align:middle}
+
+    .move-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+    .move-badge.in{background:rgba(34,197,94,.1);color:#16a34a}
+    .move-badge.out{background:rgba(239,68,68,.1);color:#dc2626}
+    .move-badge.adjust{background:rgba(59,130,246,.1);color:#2563eb}
+    .move-badge.return{background:rgba(139,92,246,.1);color:#7c3aed}
+    .move-badge.expired{background:rgba(245,158,11,.1);color:#d97706}
+    .move-badge.damaged{background:rgba(107,114,128,.1);color:#6b7280}
+    .move-badge.audit{background:rgba(20,184,166,.1);color:#0f766e}
+
+    .qty-cell{font-weight:700;font-size:13px}
+    .qty-cell.positive{color:#16a34a}.qty-cell.negative{color:#dc2626}.qty-cell.neutral{color:#2563eb}
+
+    .med-name-cell{font-weight:600;color:#1a2433;font-size:12.5px}
+    .med-sub-cell{font-size:11px;color:#94a3b8;margin-top:1px}
+
+    .user-chip{display:inline-flex;align-items:center;gap:6px;background:#f0f4f8;border-radius:20px;padding:3px 10px;font-size:11.5px;color:#64748b;font-weight:500}
+    .user-chip-avatar{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#00ADB5,#008C9E);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700}
+
+    .empty-state{text-align:center;padding:48px 20px}
+    .empty-state i{font-size:36px;margin-bottom:10px;display:block;color:#d1d9e0}
+    .empty-state p{font-size:13px;color:#90a4ae}
+
+    /* ── Pagination ──────────────────────────────────── */
+    .pagination-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #f0f4f8;flex-wrap:wrap;gap:10px}
+    .pagination-info{font-size:12.5px;color:#78909c}
+    .pagination-info strong{color:#1a2433}
+    .pagination-links{display:flex;align-items:center;gap:4px}
+    .page-btn{width:32px;height:32px;border-radius:8px;border:1px solid #e0e6ed;background:#fff;color:#64748b;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,border-color .15s}
+    .page-btn:hover{background:#f0f4f8;border-color:#cdd5df}
+    .page-btn.active{background:#00ADB5;border-color:#00ADB5;color:#fff}
+    .page-btn.disabled{opacity:.4;pointer-events:none}
+
+    /* ── Inline scanner overlay (for stock forms) ────── */
+    .form-scanner-bar{display:none;align-items:center;gap:8px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;color:#0369a1;font-weight:500}
+    .form-scanner-bar.show{display:flex}
+    .form-scanner-bar i{font-size:15px}
+    .form-scanner-bar input{flex:1;border:none;background:transparent;font-size:13px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none}
+    .form-scanner-close{border:none;background:transparent;cursor:pointer;color:#94a3b8;font-size:13px;padding:0}
+    .form-scanner-close:hover{color:#dc2626}
+
+    /* Toast */
+    .toast{position:fixed;bottom:26px;right:26px;background:#1a2433;color:#fff;padding:11px 16px;border-radius:10px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:9999;transform:translateY(70px);opacity:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;pointer-events:none;max-width:360px}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.success i{color:#4ade80}.toast.error i{color:#f87171}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- Summary Cards -->
+<div class="stats-row">
+    <div class="stat-card"><div class="stat-icon green"><i class="fas fa-arrow-down"></i></div><div class="stat-info"><span class="stat-value">{{ total_in_today }}</span><span class="stat-label">Units In Today</span><span class="stat-sub">Stock received</span></div></div>
+    <div class="stat-card"><div class="stat-icon red"><i class="fas fa-arrow-up"></i></div><div class="stat-info"><span class="stat-value">{{ total_out_today }}</span><span class="stat-label">Units Out Today</span><span class="stat-sub">Dispensed / removed</span></div></div>
+    <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-sliders"></i></div><div class="stat-info"><span class="stat-value">{{ total_adjustments_today }}</span><span class="stat-label">Adjustments Today</span><span class="stat-sub">Manual corrections</span></div></div>
+    <div class="stat-card"><div class="stat-icon teal"><i class="fas fa-list-check"></i></div><div class="stat-info"><span class="stat-value">{{ total_movements_today }}</span><span class="stat-label">Total Movements</span><span class="stat-sub">All types today</span></div></div>
+</div>
+
+<div class="stock-layout">
+
+    <!-- ══ LEFT: TABS ══ -->
+    <div class="tab-card">
+        <div class="tab-header">
+            <button class="tab-btn in-tab active"  onclick="switchTab('in')"><i class="fas fa-arrow-circle-down"></i>Stock In</button>
+            <button class="tab-btn out-tab"         onclick="switchTab('out')"><i class="fas fa-arrow-circle-up"></i>Stock Out</button>
+            <button class="tab-btn adj-tab"         onclick="switchTab('adj')"><i class="fas fa-sliders"></i>Adjust</button>
+        </div>
+
+        <!-- ── STOCK IN ── -->
+        <div class="tab-pane active" id="pane-in">
+            <div class="tab-body">
+                <form method="POST" action="{% url 'stock_in' %}" id="form-in">
+                    {% csrf_token %}
+                    <input type="hidden" name="medicine" id="in_medicine_id" class="med-picker-hidden">
+
+                    <!-- Searchable medicine picker -->
+                    {% include 'partials/_med_picker.html' with tab='in' %}
+
+                    <!-- Medicine info card (updates on selection) -->
+                    <div class="med-info-card" id="in_info_card">
+                        <div class="med-info-card-name" id="in_info_name">—</div>
+                        <div class="med-info-card-row">
+                            <div class="med-info-item"><span class="med-info-item-label">Current Stock</span><span class="med-info-item-value" id="in_info_stock">—</span></div>
+                            <div class="med-info-item"><span class="med-info-item-label">Dosage</span><span class="med-info-item-value" id="in_info_dosage">—</span></div>
+                            <div class="med-info-item"><span class="med-info-item-label">Supplier</span><span class="med-info-item-value" id="in_info_supplier">—</span></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group"><label class="form-label">Quantity *</label><input type="number" name="quantity" class="form-control" min="1" value="1" required></div>
+                        <div class="form-group"><label class="form-label">Purchase Price/unit (₱)</label><input type="number" name="purchase_price" id="in_purchase_price" class="form-control" step="0.01" min="0" placeholder="0.00"></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Supplier</label><select name="supplier" id="in_supplier_sel" class="form-control"><option value="">— Select —</option>{% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}</select></div>
+                    <div class="form-group"><label class="form-label">Reference / DR No.</label><input type="text" name="reference_no" class="form-control" placeholder="Delivery receipt or PO number"></div>
+
+                    <label class="toggle-row"><input type="checkbox" name="update_batch" id="updateBatchToggle" onchange="toggleBatchFields()">Update batch &amp; expiry with this delivery</label>
+                    <div class="batch-fields" id="batchFields">
+                        <div class="form-divider">Batch Details</div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">Batch Number</label><input type="text" name="batch_number" id="in_batch" class="form-control"></div>
+                            <div class="form-group"><label class="form-label">Expiry Date</label><input type="date" name="expiry_date" id="in_expiry" class="form-control"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group"><label class="form-label">Notes</label><textarea name="notes" class="form-control" placeholder="Optional remarks…"></textarea></div>
+                    <button type="submit" class="btn-stock-in"><i class="fas fa-plus-circle"></i>Record Stock In</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── STOCK OUT ── -->
+        <div class="tab-pane" id="pane-out">
+            <div class="tab-body">
+                <form method="POST" action="{% url 'stock_out' %}" id="form-out">
+                    {% csrf_token %}
+                    <input type="hidden" name="medicine" id="out_medicine_id" class="med-picker-hidden">
+
+                    {% include 'partials/_med_picker.html' with tab='out' %}
+
+                    <div class="med-info-card" id="out_info_card">
+                        <div class="med-info-card-name" id="out_info_name">—</div>
+                        <div class="med-info-card-row">
+                            <div class="med-info-item"><span class="med-info-item-label">Available Stock</span><span class="med-info-item-value" id="out_info_stock">—</span></div>
+                            <div class="med-info-item"><span class="med-info-item-label">Dosage</span><span class="med-info-item-value" id="out_info_dosage">—</span></div>
+                            <div class="med-info-item"><span class="med-info-item-label">Batch</span><span class="med-info-item-value" id="out_info_batch">—</span></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group"><label class="form-label">Transaction Type *</label><select name="movement_type" class="form-control" onchange="toggleOutFields(this.value)"><option value="out">Dispensing (Patient)</option><option value="expired">Expired Removal</option><option value="damaged">Damaged / Disposal</option></select></div>
+                    <div class="form-group"><label class="form-label">Quantity *</label><input type="number" name="quantity" class="form-control" min="1" value="1" required></div>
+                    <div id="dispenseFields">
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">Dispensed To</label><input type="text" name="dispensed_to" class="form-control" placeholder="Patient name or dept."></div>
+                            <div class="form-group"><label class="form-label">Prescription No.</label><input type="text" name="prescription_no" class="form-control" placeholder="Rx number"></div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Reference No.</label><input type="text" name="reference_no" class="form-control" placeholder="Optional reference"></div>
+                    <div class="form-group"><label class="form-label">Notes</label><textarea name="notes" class="form-control" placeholder="Reason or remarks…"></textarea></div>
+                    <button type="submit" class="btn-stock-out"><i class="fas fa-minus-circle"></i>Record Stock Out</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── ADJUST ── -->
+        <div class="tab-pane" id="pane-adj">
+            <div class="tab-body">
+                <form method="POST" action="{% url 'stock_adjust' %}" id="form-adj">
+                    {% csrf_token %}
+                    <input type="hidden" name="medicine" id="adj_medicine_id" class="med-picker-hidden">
+
+                    {% include 'partials/_med_picker.html' with tab='adj' %}
+
+                    <div class="med-info-card" id="adj_info_card">
+                        <div class="med-info-card-name" id="adj_info_name">—</div>
+                        <div class="med-info-card-row">
+                            <div class="med-info-item"><span class="med-info-item-label">Current Stock</span><span class="med-info-item-value" id="adj_info_stock">—</span></div>
+                            <div class="med-info-item"><span class="med-info-item-label">Dosage</span><span class="med-info-item-value" id="adj_info_dosage">—</span></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group"><label class="form-label">Adjustment Type</label><select name="movement_type" class="form-control"><option value="adjust">Manual Correction</option><option value="audit">Audit Adjustment</option><option value="return">Return to Inventory</option></select></div>
+                    <div class="form-group">
+                        <label class="form-label">New Quantity (absolute) *</label>
+                        <input type="number" name="new_quantity" id="adj_new_qty" class="form-control" min="0" value="0" required oninput="calcDiff()">
+                        <small style="font-size:11px;color:#94a3b8;margin-top:3px;display:block">Set the correct total count. Difference is logged automatically.</small>
+                        <small id="adj_diff_label" style="font-size:11.5px;font-weight:600;margin-top:2px;display:none"></small>
+                    </div>
+                    <div class="form-group"><label class="form-label">Reference No.</label><input type="text" name="reference_no" class="form-control" placeholder="Audit no. or reference"></div>
+                    <div class="form-group"><label class="form-label">Reason * <span style="color:#94a3b8;font-weight:400">(required)</span></label><textarea name="notes" class="form-control" required placeholder="Explain reason for adjustment…"></textarea></div>
+                    <button type="submit" class="btn-adjust"><i class="fas fa-check-circle"></i>Apply Adjustment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ RIGHT: HISTORY ══ -->
+    <div class="history-card">
+        <div class="history-toolbar">
+            <div class="history-title"><i class="fas fa-clock-rotate-left"></i>Movement History</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span class="count-badge">{{ paginator.count }} records</span>
+                <div class="per-page-wrap">Show
+                    <select onchange="changePerPage(this.value)">
+                        {% for opt in per_page_options %}<option value="{{ opt }}" {% if per_page == opt %}selected{% endif %}>{{ opt }}</option>{% endfor %}
+                    </select>
+                    entries
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <form method="GET" action="">
+            <div class="filter-bar">
+                <span class="filter-label">Filter:</span>
+                <input type="date" name="date_from" class="filter-input" value="{{ date_from }}" title="From date">
+                <span style="font-size:11px;color:#b0bec5">to</span>
+                <input type="date" name="date_to" class="filter-input" value="{{ date_to }}" title="To date">
+                <input type="hidden" name="per_page" value="{{ per_page }}">
+                <select name="medicine" class="filter-select">
+                    <option value="">All Medicines</option>
+                    {% for m in all_medicines %}<option value="{{ m.pk }}" {% if med_filter == m.pk|stringformat:'s' %}selected{% endif %}>{{ m.medicine_name }}</option>{% endfor %}
+                </select>
+                <select name="user" class="filter-select">
+                    <option value="">All Users</option>
+                    {% for u in all_users %}<option value="{{ u.pk }}" {% if user_filter == u.pk|stringformat:'s' %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>{% endfor %}
+                </select>
+                <select name="type" class="filter-select">
+                    <option value="">All Types</option>
+                    {% for val,label in movement_types %}<option value="{{ val }}" {% if type_filter == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+                <button type="submit" class="btn-filter"><i class="fas fa-filter"></i> Filter</button>
+                {% if date_from or date_to or med_filter or user_filter or type_filter %}
+                <a href="{% url 'stock_management' %}" class="btn-clear"><i class="fas fa-xmark"></i> Clear</a>
+                {% endif %}
+            </div>
+        </form>
+
+        <!-- Table -->
+        <table class="data-table">
+            <thead>
+                <tr><th>Date & Time</th><th>Medicine</th><th>Type</th><th>Qty</th><th>Before</th><th>After</th><th>Reference</th><th>By</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+                {% for mv in movements %}
+                <tr>
+                    <td style="white-space:nowrap">
+                        <div style="font-size:12px;font-weight:600;color:#1a2433">{{ mv.created_at|date:"M d, Y" }}</div>
+                        <div style="font-size:11px;color:#94a3b8">{{ mv.created_at|date:"h:i A" }}</div>
+                    </td>
+                    <td><div class="med-name-cell">{{ mv.medicine.medicine_name }}</div><div class="med-sub-cell">{{ mv.medicine.strength }}</div></td>
+                    <td>
+                        <span class="move-badge {{ mv.movement_type }}">
+                            {% if mv.movement_type == 'in' %}<i class="fas fa-arrow-down"></i> Stock In
+                            {% elif mv.movement_type == 'out' %}<i class="fas fa-arrow-up"></i> Dispensed
+                            {% elif mv.movement_type == 'adjust' %}<i class="fas fa-sliders"></i> Adjustment
+                            {% elif mv.movement_type == 'return' %}<i class="fas fa-rotate-left"></i> Return
+                            {% elif mv.movement_type == 'expired' %}<i class="fas fa-calendar-xmark"></i> Expired
+                            {% elif mv.movement_type == 'damaged' %}<i class="fas fa-trash-can"></i> Damaged
+                            {% elif mv.movement_type == 'audit' %}<i class="fas fa-clipboard-check"></i> Audit
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td><span class="qty-cell {% if mv.quantity > 0 %}positive{% elif mv.quantity < 0 %}negative{% else %}neutral{% endif %}">{% if mv.quantity > 0 %}+{% endif %}{{ mv.quantity }}</span></td>
+                    <td style="color:#94a3b8;font-size:12.5px">{{ mv.quantity_before }}</td>
+                    <td style="font-weight:600;color:#1a2433;font-size:12.5px">{{ mv.quantity_after }}</td>
+                    <td style="font-size:12px;color:#64748b">
+                        {% if mv.reference_no %}<span style="font-family:monospace;background:#f0f4f8;padding:2px 6px;border-radius:5px">{{ mv.reference_no }}</span>
+                        {% elif mv.batch_number %}<span style="color:#94a3b8">Batch: {{ mv.batch_number }}</span>
+                        {% elif mv.prescription_no %}<span style="color:#94a3b8">Rx: {{ mv.prescription_no }}</span>
+                        {% else %}<span style="color:#d1d9e0">—</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if mv.performed_by %}
+                        <div class="user-chip">
+                            <div class="user-chip-avatar">{% if mv.performed_by.first_name %}{{ mv.performed_by.first_name|first|upper }}{% else %}{{ mv.performed_by.username|first|upper }}{% endif %}</div>
+                            {{ mv.performed_by.get_full_name|default:mv.performed_by.username }}
+                        </div>
+                        {% else %}<span style="color:#d1d9e0;font-size:12px">System</span>{% endif %}
+                    </td>
+                    <td style="font-size:12px;color:#64748b;max-width:160px"><span title="{{ mv.notes }}">{{ mv.notes|truncatechars:38|default:"—" }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9"><div class="empty-state"><i class="fas fa-clock-rotate-left"></i><p>No movements found{% if type_filter or med_filter or date_from %} for selected filters{% endif %}.</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        {% if paginator.num_pages > 1 %}
+        <div class="pagination-bar">
+            <div class="pagination-info">
+                Showing <strong>{{ page_obj.start_index }}</strong>–<strong>{{ page_obj.end_index }}</strong>
+                of <strong>{{ paginator.count }}</strong> movements
+            </div>
+
+            <div class="pagination-links">
+                {% if page_obj.has_previous %}
+                <a class="page-btn" href="?{% url_replace 'page' 1 %}">«</a>
+                <a class="page-btn" href="?{% url_replace 'page' page_obj.previous_page_number %}">‹</a>
+                {% else %}
+                <span class="page-btn disabled">«</span>
+                <span class="page-btn disabled">‹</span>
+                {% endif %}
+
+                {% for num in paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="page-btn active">{{ num }}</span>
+                    {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                        <a class="page-btn" href="?{% url_replace 'page' num %}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a class="page-btn" href="?{% url_replace 'page' page_obj.next_page_number %}">›</a>
+                <a class="page-btn" href="?{% url_replace 'page' paginator.num_pages %}">»</a>
+                {% else %}
+                <span class="page-btn disabled">›</span>
+                <span class="page-btn disabled">»</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-circle-check"></i><span id="toastMsg"></span></div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+<script>
+const MEDICINE_SEARCH_URL = "{% url 'medicine_search_ajax' %}";
+const MEDICINE_INFO_URL   = "{% url 'stock_medicine_info' %}";
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.${tab}-tab`).classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.getElementById(`pane-${tab}`).classList.add('active');
+}
+
+// ── Searchable Medicine Picker ────────────────────────────────
+// Each tab has: [tab]_search_input, [tab]_medicine_id, [tab]_picker_dropdown
+let searchTimers = {};
+let currentStockQty = {};
+
+function initPicker(tab) {
+    const input    = document.getElementById(`${tab}_search_input`);
+    const dropdown = document.getElementById(`${tab}_picker_dropdown`);
+    if(!input || !dropdown) return;
+
+    input.addEventListener('input', () => {
+        clearTimeout(searchTimers[tab]);
+        const q = input.value.trim();
+        if(!q) { dropdown.classList.remove('open'); return; }
+        searchTimers[tab] = setTimeout(() => searchMedicines(tab, q), 300);
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', e => {
+        if(!input.closest('.med-picker').contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+}
+
+
+// Replace the searchMedicines function
+function searchMedicines(tab, q) {
+    const dropdown = document.getElementById(`${tab}_picker_dropdown`);
+    dropdown.innerHTML = '<div class="med-picker-empty"><i class="fas fa-spinner fa-spin"></i> Searching…</div>';
+    dropdown.classList.add('open');
+
+    fetch(MEDICINE_SEARCH_URL + '?q=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(data => {
+            if(!data.results.length) {
+                dropdown.innerHTML = '<div class="med-picker-empty">No medicines found for "' + q + '"</div>';
+                return;
+            }
+            dropdown.innerHTML = data.results.map(m => {
+                const stockClass = m.stock_status === 'out_of_stock' ? 'stock-out' :
+                                   m.stock_status === 'low_stock'    ? 'stock-low' : 'stock-ok';
+                // Use data-attributes instead of inline JavaScript with JSON
+                return `<div class="med-option" 
+                            data-pk="${m.pk}"
+                            data-name="${escapeHtml(m.medicine_name)}"
+                            data-strength="${escapeHtml(m.strength)}"
+                            data-dosage="${escapeHtml(m.dosage_form)}"
+                            data-stock="${m.stock_quantity}"
+                            data-stock-status="${m.stock_status}"
+                            data-supplier-id="${m.supplier_id || ''}"
+                            data-supplier-name="${escapeHtml(m.supplier_name || '')}"
+                            data-batch="${escapeHtml(m.batch_number || '')}"
+                            data-expiry="${m.expiry_date || ''}"
+                            data-purchase-price="${m.purchase_price || '0'}"
+                            onclick="selectMedicineFromData('${tab}', this)">
+                            <span class="med-option-stock ${stockClass}">${m.stock_quantity} units</span>
+                            <div class="med-option-name">${escapeHtml(m.medicine_name)} <span style="color:#94a3b8;font-weight:400">${escapeHtml(m.strength)}</span></div>
+                            <div class="med-option-sub">${escapeHtml(m.label)}</div>
+                        </div>`;
+            }).join('');
+        })
+        .catch(() => {
+            dropdown.innerHTML = '<div class="med-picker-empty">Search failed. Try again.</div>';
+        });
+}
+
+// Helper function to escape HTML and prevent XSS
+function escapeHtml(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// New function to handle selection from data attributes
+function selectMedicineFromData(tab, element) {
+    // Build medicine object from data attributes
+    const med = {
+        pk: element.dataset.pk,
+        medicine_name: element.dataset.name,
+        strength: element.dataset.strength,
+        dosage_form: element.dataset.dosage,
+        stock_quantity: parseInt(element.dataset.stock),
+        stock_status: element.dataset.stockStatus,
+        supplier_id: element.dataset.supplierId,
+        supplier_name: element.dataset.supplierName,
+        batch_number: element.dataset.batch,
+        expiry_date: element.dataset.expiry,
+        purchase_price: element.dataset.purchasePrice,
+        label: `${element.dataset.name} ${element.dataset.strength} (${element.dataset.dosage})`
+    };
+    
+    selectMedicine(tab, med);
+}
+
+// Keep the original selectMedicine function but modify it to handle the object directly
+function selectMedicine(tab, med) {
+    // Set hidden input
+    document.getElementById(`${tab}_medicine_id`).value = med.pk;
+
+    // Set search input display
+    document.getElementById(`${tab}_search_input`).value =
+        `${med.medicine_name} ${med.strength} (${med.dosage_form})`;
+
+    // Close dropdown
+    const dropdown = document.getElementById(`${tab}_picker_dropdown`);
+    if (dropdown) {
+        dropdown.classList.remove('open');
+    }
+
+    // Store current stock for diff calc
+    currentStockQty[tab] = med.stock_quantity;
+
+    // Update info card
+    updateInfoCard(tab, med);
+
+    // Pre-fill supplier in Stock In
+    if(tab === 'in') {
+        const supplierSel = document.getElementById('in_supplier_sel');
+        if(supplierSel && med.supplier_id) supplierSel.value = med.supplier_id;
+        const ppEl = document.getElementById('in_purchase_price');
+        if(ppEl && med.purchase_price && med.purchase_price !== '0.00') ppEl.value = med.purchase_price;
+        document.getElementById('in_batch').value  = med.batch_number || '';
+        document.getElementById('in_expiry').value = med.expiry_date  || '';
+    }
+
+    // Pre-fill new_quantity in Adjust
+    if(tab === 'adj') {
+        document.getElementById('adj_new_qty').value = med.stock_quantity;
+        calcDiff();
+    }
+}
+
+// Update the updateInfoCard function to handle the medicine object properly
+function updateInfoCard(tab, med) {
+    const card = document.getElementById(`${tab}_info_card`);
+    if(!card) return;
+
+    document.getElementById(`${tab}_info_name`).textContent =
+        `${med.medicine_name} ${med.strength} — ${med.dosage_form}`;
+
+    const stockEl = document.getElementById(`${tab}_info_stock`);
+    if(stockEl) {
+        stockEl.textContent = `${med.stock_quantity} units`;
+        stockEl.className   = 'med-info-item-value ' +
+            (med.stock_status === 'out_of_stock' ? 'red' :
+             med.stock_status === 'low_stock'    ? 'orange' : 'green');
+    }
+
+    const dosageEl = document.getElementById(`${tab}_info_dosage`);
+    if(dosageEl) dosageEl.textContent = med.dosage_form;
+
+    // Tab-specific extra fields
+    if(tab === 'in') {
+        const supEl = document.getElementById('in_info_supplier');
+        if(supEl) supEl.textContent = med.supplier_name || '—';
+    }
+    if(tab === 'out') {
+        const batchEl = document.getElementById('out_info_batch');
+        if(batchEl) batchEl.textContent = med.batch_number || '—';
+    }
+
+    card.classList.add('show');
+}
+
+
+
+// ── Barcode scan inside stock forms ──────────────────────────
+let formScannerTab = null;
+let formCodeReader = null;
+
+function openFormScanner(tab) {
+    formScannerTab = tab;
+    const bar = document.getElementById(`${tab}_scan_bar`);
+    if(bar) {
+        bar.classList.add('show');
+        document.getElementById(`${tab}_scan_input`).focus();
+        if(typeof ZXing !== 'undefined') startFormCamera(tab);
+    }
+}
+
+function closeFormScanner(tab) {
+    stopFormCamera();
+    const bar = document.getElementById(`${tab}_scan_bar`);
+    if(bar) bar.classList.remove('show');
+    document.getElementById(`${tab}_scan_input`).value = '';
+}
+
+function startFormCamera(tab) {
+    stopFormCamera();
+    formCodeReader = new ZXing.BrowserMultiFormatReader();
+    const videoEl  = document.getElementById(`${tab}_scan_video`);
+    if(!videoEl) return;
+
+    formCodeReader.listVideoInputDevices().then(devices => {
+        if(!devices.length) return;
+        const id = devices[devices.length - 1].deviceId;
+        return formCodeReader.decodeFromVideoDevice(id, videoEl, (result) => {
+            if(result) handleFormScan(tab, result.getText());
+        });
+    }).catch(() => {});
+}
+
+function stopFormCamera() {
+    if(formCodeReader) { formCodeReader.reset(); formCodeReader = null; }
+}
+
+function handleFormScan(tab, barcode) {
+    stopFormCamera();
+    document.getElementById(`${tab}_scan_input`).value = barcode;
+    fetch(MEDICINE_SEARCH_URL + '?q=' + encodeURIComponent(barcode))
+        .then(r => r.json())
+        .then(data => {
+            if(data.results.length) {
+                selectMedicine(tab, data.results[0]);
+                closeFormScanner(tab);
+                showToast(`Found: ${data.results[0].medicine_name}`, 'success');
+            } else {
+                showToast(`Barcode "${barcode}" not found.`, 'error');
+            }
+        }).catch(() => showToast('Barcode lookup failed.', 'error'));
+}
+
+function submitFormScan(tab) {
+    const val = document.getElementById(`${tab}_scan_input`).value.trim();
+    if(val) handleFormScan(tab, val);
+}
+
+// ── Adjust diff ───────────────────────────────────────────────
+function calcDiff() {
+    const newQty  = parseInt(document.getElementById('adj_new_qty').value || 0);
+    const current = currentStockQty['adj'] ?? null;
+    const label   = document.getElementById('adj_diff_label');
+    if(current === null) { label.style.display='none'; return; }
+    const diff = newQty - current;
+    label.style.display = 'block';
+    if(diff > 0)      { label.style.color='#16a34a'; label.textContent=`▲ +${diff} units will be added`; }
+    else if(diff < 0) { label.style.color='#dc2626'; label.textContent=`▼ ${diff} units will be removed`; }
+    else              { label.style.color='#94a3b8'; label.textContent='No change from current stock'; }
+}
+
+function toggleBatchFields() {
+    document.getElementById('batchFields').classList.toggle(
+        'show', document.getElementById('updateBatchToggle').checked
+    );
+}
+
+function toggleOutFields(type) {
+    document.getElementById('dispenseFields').style.display = type==='out' ? '' : 'none';
+}
+
+// ── Pagination per-page ───────────────────────────────────────
+function changePerPage(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', value);
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type='success') {
+    const toast = document.getElementById('toast');
+    const icon  = toast.querySelector('i');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.className = `toast ${type}`;
+    icon.className  = type==='success' ? 'fas fa-circle-check' : 'fas fa-circle-xmark';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ── Init all pickers on load ──────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    ['in','out','adj'].forEach(tab => initPicker(tab));
+});
+
+{% if messages %}{% for message in messages %}
+    showToast("{{ message|escapejs }}","{% if 'error' in message.tags %}error{% else %}success{% endif %}");
+{% endfor %}{% endif %}
+</script>
+{% endblock %}

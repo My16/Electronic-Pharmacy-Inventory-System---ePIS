@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Pharmacy Inventory System</title>
+        <link rel="icon" href="{% static 'img/mharsmc.png' %}" type="image/x-icon" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="{% static 'css/loginpage.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    </head>
+
+    <body>
+        <div class="login-container">
+            <div class="login-left">
+                <div class="welcome-container">
+                    <img src="{% static 'img/login-logo.png' %}" alt="Small Logo" class="small-logo">
+                    <h4>Welcome, Please Log In</h4>
+                </div>
+                <hr>
+                <div>
+                    <form action="{% url 'login' %}" method="POST">
+                        {% csrf_token %}
+                        <!-- username field -->
+                        <div class="input-group">
+                            <input type="text" placeholder="Username" class="form-control" name="username" required>
+                        </div>
+                        <!-- password field -->
+                        <div class="input-group">
+                            <input type="password" id="password" placeholder="Password" class="form-control" name="password" required>
+                            <span class="toggle-password" onclick="togglePassword()">
+                                    <i class="fa fa-eye"></i>
+                                </span>
+                        </div>
+                        <!-- allert for caps lock -->
+                        <div id="caps-warning">⚠ Caps Lock is ON!</div>
+                        <!-- allert for wrong pass or user -->
+                        {% if messages %} {% for message in messages %}
+                        <div class="alert">{{ message }}</div>
+                        {% endfor %} {% endif %}
+                        <!-- button for submit -->
+                        <button type="submit" name="submit" value="Login">Log In</button>
+                    </form>
+                </div>
+
+                <a class="forgot-password" href="#">Forgot Password?</a>
+
+            </div>
+            <div class="login-right">
+                <img src="{% static 'img/mharsmc.png' %}" alt="Mharsmc Logo">
+                <h2>Electronic Pharmacy Inventory System</h2>
+                <p style="font-size: 14px">Mayor Hilarion A. Ramiro Sr. Medical Center</p>
+                <small style="font-size: 11px;">A project of MHARSMC-IT Team.</small>
+            </div>
+        </div>
+
+        <!-- Loader Overlay (Initially Hidden) -->
+        <div id="loaderOverlay">
+            <l-spiral size="60" speed="0.9" color="white"></l-spiral>
+        </div>
+
+        <!-- Load LDRS Script -->
+        <script type="module" src="https://cdn.jsdelivr.net/npm/ldrs/dist/auto/spiral.js"></script>
+        <script src="{% static 'js/loginpage.js' %}"></script>
+
+
+    </body>
+
+</html>

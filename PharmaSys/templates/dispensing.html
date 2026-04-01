@@ -1,0 +1,857 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load app_extras %}
+
+{% block title %}ePIS — Dispensing{% endblock %}
+{% block page_title %}Medicine Dispensing{% endblock %}
+{% block breadcrumb %}Dispensing{% endblock %}
+{% block nav_dispensing %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Summary Cards ───────────────────────────────── */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:22px; }
+    .stat-card { background:#fff; border-radius:14px; padding:18px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #eef2f7; animation:slideUp .4s ease both; }
+    .stat-card:nth-child(2){animation-delay:.07s}.stat-card:nth-child(3){animation-delay:.14s}.stat-card:nth-child(4){animation-delay:.21s}
+    @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    .stat-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+    .stat-icon.teal  {background:rgba(0,173,181,.12);color:#00ADB5}
+    .stat-icon.green {background:rgba(34,197,94,.12);color:#16a34a}
+    .stat-icon.blue  {background:rgba(59,130,246,.12);color:#2563eb}
+    .stat-icon.purple{background:rgba(139,92,246,.12);color:#7c3aed}
+    .stat-info{display:flex;flex-direction:column}
+    .stat-value{font-size:24px;font-weight:700;color:#1a2433;line-height:1}
+    .stat-label{font-size:11.5px;color:#78909c;margin-top:3px;font-weight:500}
+    .stat-sub{font-size:10.5px;color:#b0bec5;margin-top:1px}
+
+    /* ── Layout ──────────────────────────────────────── */
+    .dispensing-layout { display:grid; grid-template-columns:1fr 380px; gap:18px; align-items:start; }
+
+    /* ── Left Panel ──────────────────────────────────── */
+    .search-panel { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #eef2f7; overflow:hidden; animation:slideUp .4s ease .1s both; }
+    .panel-toolbar { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f4f8; gap:10px; flex-wrap:wrap; }
+    .panel-title { font-size:14px; font-weight:700; color:#1a2433; display:flex; align-items:center; gap:8px; }
+    .panel-title i { color:#00ADB5; }
+
+    /* Search box */
+    .search-wrap { display:flex; align-items:center; gap:8px; padding:14px 20px; border-bottom:1px solid #f0f4f8; background:#fafbfc; }
+    .search-box { position:relative; flex:1; }
+    .search-box i { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#b0bec5; font-size:13px; }
+    .search-box input { width:100%; border:1px solid #e0e6ed; border-radius:8px; padding:9px 12px 9px 34px; font-size:13px; font-family:'Poppins',sans-serif; color:#1a2433; outline:none; background:#fff; transition:border-color .2s,box-shadow .2s; box-sizing:border-box; }
+    .search-box input:focus { border-color:#00ADB5; box-shadow:0 0 0 3px rgba(0,173,181,.1); }
+    .btn-scan-barcode { display:flex; align-items:center; gap:6px; background:#f0f4f8; color:#64748b; border:1px solid #e0e6ed; border-radius:8px; padding:9px 14px; font-size:12.5px; font-weight:600; font-family:'Poppins',sans-serif; cursor:pointer; white-space:nowrap; transition:background .2s; }
+    .btn-scan-barcode:hover { background:#e0e6ed; color:#1a2433; }
+
+    /* Medicine grid */
+    .med-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:16px 20px; min-height:300px; }
+    .med-card { background:#f8fafc; border:1px solid #eef2f7; border-radius:12px; padding:14px; cursor:pointer; transition:all .2s; position:relative; }
+    .med-card:hover { border-color:#00ADB5; background:#f0fdfe; box-shadow:0 4px 12px rgba(0,173,181,.1); transform:translateY(-2px); }
+    .med-card.out-of-stock { opacity:.5; cursor:not-allowed; }
+    .med-card.out-of-stock:hover { transform:none; border-color:#eef2f7; background:#f8fafc; box-shadow:none; }
+    .med-card-name { font-weight:700; font-size:13px; color:#1a2433; margin-bottom:3px; line-height:1.3; }
+    .med-card-generic { font-size:11px; color:#94a3b8; margin-bottom:8px; }
+    .med-card-bottom { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+    .med-card-price { font-size:13px; font-weight:700; color:#00ADB5; }
+    .med-card-stock { font-size:11px; font-weight:600; padding:2px 7px; border-radius:6px; }
+    .stock-ok  { background:rgba(34,197,94,.1);  color:#16a34a; }
+    .stock-low { background:rgba(245,158,11,.1); color:#d97706; }
+    .stock-out { background:rgba(239,68,68,.1);  color:#dc2626; }
+    .med-card-form { font-size:10.5px; color:#94a3b8; margin-top:4px; }
+    .med-card-add-icon { position:absolute; top:10px; right:10px; width:22px; height:22px; border-radius:50%; background:#00ADB5; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; opacity:0; transition:opacity .2s; }
+    .med-card:not(.out-of-stock):hover .med-card-add-icon { opacity:1; }
+
+    .med-grid-empty { grid-column:span 3; text-align:center; padding:40px; color:#b0bec5; font-size:13px; }
+    .med-grid-empty i { display:block; font-size:32px; margin-bottom:10px; color:#d1d9e0; }
+
+    /* ── Right Panel: Cart ───────────────────────────── */
+    .cart-panel { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #eef2f7; overflow:hidden; animation:slideUp .4s ease .15s both; position:sticky; top:80px; }
+    .cart-header { padding:16px 20px; border-bottom:1px solid #f0f4f8; display:flex; align-items:center; justify-content:space-between; }
+    .cart-title { font-size:14px; font-weight:700; color:#1a2433; display:flex; align-items:center; gap:8px; }
+    .cart-title i { color:#00ADB5; }
+    .cart-count { background:rgba(0,173,181,.1); color:#00ADB5; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; }
+    .btn-clear-cart { background:none; border:none; color:#dc2626; font-size:12px; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; padding:4px 8px; border-radius:6px; transition:background .15s; }
+    .btn-clear-cart:hover { background:rgba(239,68,68,.08); }
+
+    /* Customer info */
+    .cart-customer { padding:14px 20px; border-bottom:1px solid #f0f4f8; background:#fafbfc; }
+    .customer-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:#94a3b8; margin-bottom:8px; }
+    .customer-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+    .customer-input { width:100%; border:1px solid #e0e6ed; border-radius:7px; padding:7px 10px; font-size:12.5px; font-family:'Poppins',sans-serif; color:#1a2433; outline:none; background:#fff; transition:border-color .2s; box-sizing:border-box; }
+    .customer-input:focus { border-color:#00ADB5; box-shadow:0 0 0 3px rgba(0,173,181,.1); }
+
+    /* Cart items */
+    .cart-items { max-height:300px; overflow-y:auto; padding:8px 0; }
+    .cart-item { display:flex; align-items:center; gap:10px; padding:10px 20px; border-bottom:1px solid #f8fafc; transition:background .15s; }
+    .cart-item:last-child { border-bottom:none; }
+    .cart-item:hover { background:#f8fafc; }
+    .cart-item-info { flex:1; min-width:0; }
+    .cart-item-name { font-size:12.5px; font-weight:600; color:#1a2433; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cart-item-price { font-size:11px; color:#94a3b8; margin-top:1px; }
+    .cart-qty-ctrl { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+    .qty-btn { width:24px; height:24px; border-radius:6px; border:1px solid #e0e6ed; background:#f8fafc; color:#64748b; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; font-weight:700; }
+    .qty-btn:hover { background:#e0e6ed; color:#1a2433; }
+    .qty-val { font-size:13px; font-weight:700; color:#1a2433; min-width:26px; text-align:center; }
+    .cart-item-subtotal { font-size:12.5px; font-weight:700; color:#1a2433; min-width:55px; text-align:right; flex-shrink:0; }
+    .btn-remove-item { background:none; border:none; color:#dc2626; cursor:pointer; padding:3px; opacity:.5; transition:opacity .15s; }
+    .btn-remove-item:hover { opacity:1; }
+
+    .cart-empty { text-align:center; padding:32px 20px; color:#b0bec5; font-size:13px; }
+    .cart-empty i { display:block; font-size:28px; margin-bottom:8px; color:#d1d9e0; }
+
+    /* Cart totals */
+    .cart-totals { padding:14px 20px; border-top:1px solid #f0f4f8; background:#fafbfc; }
+    .total-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:12.5px; color:#64748b; }
+    .total-row.grand { font-size:15px; font-weight:800; color:#1a2433; border-top:1px solid #e0e6ed; padding-top:8px; margin-top:4px; }
+    .total-row.grand span:last-child { color:#00ADB5; }
+    .discount-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .discount-row input { flex:1; border:1px solid #e0e6ed; border-radius:7px; padding:6px 10px; font-size:12.5px; font-family:'Poppins',sans-serif; color:#1a2433; outline:none; background:#fff; transition:border-color .2s; box-sizing:border-box; }
+    .discount-row input:focus { border-color:#00ADB5; }
+    .discount-row select { border:1px solid #e0e6ed; border-radius:7px; padding:6px 10px; font-size:12.5px; font-family:'Poppins',sans-serif; color:#1a2433; outline:none; background:#fff; cursor:pointer; }
+
+    /* Cart footer buttons */
+    .cart-footer { padding:14px 20px; border-top:1px solid #f0f4f8; display:flex; flex-direction:column; gap:8px; }
+    .btn-dispense { width:100%; padding:11px; border:none; border-radius:10px; background:#00ADB5; color:#fff; font-size:14px; font-weight:700; font-family:'Poppins',sans-serif; cursor:pointer; transition:background .2s; box-shadow:0 2px 10px rgba(0,173,181,.3); display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn-dispense:hover { background:#008C9E; }
+    .btn-dispense:disabled { opacity:.5; cursor:not-allowed; }
+
+    /* ── Transaction History ──────────────────────────── */
+    .history-card { background:#fff; border-radius:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #eef2f7; overflow:hidden; animation:slideUp .4s ease .2s both; margin-top:18px; }
+    .history-toolbar { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f4f8; gap:10px; flex-wrap:wrap; }
+    .history-title { font-size:14px; font-weight:700; color:#1a2433; display:flex; align-items:center; gap:8px; }
+    .history-title i { color:#00ADB5; }
+    .count-badge { background:rgba(0,173,181,.1); color:#00ADB5; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; }
+
+    .data-table { width:100%; border-collapse:collapse; }
+    .data-table thead th { background:#f8fafc; padding:10px 16px; text-align:left; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.7px; color:#78909c; border-bottom:1px solid #eef2f7; white-space:nowrap; }
+    .data-table tbody tr { border-bottom:1px solid #f4f7fb; transition:background .15s; }
+    .data-table tbody tr:last-child { border-bottom:none; }
+    .data-table tbody tr:hover { background:#f8fafc; }
+    .data-table td { padding:11px 16px; font-size:12.5px; color:#1a2433; vertical-align:middle; }
+
+    .txn-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(0,173,181,.1); color:#00ADB5; }
+    .user-chip { display:inline-flex; align-items:center; gap:6px; background:#f0f4f8; border-radius:20px; padding:3px 10px; font-size:11.5px; color:#64748b; font-weight:500; }
+    .user-chip-avatar { width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg,#00ADB5,#008C9E); display:flex; align-items:center; justify-content:center; color:#fff; font-size:9px; font-weight:700; }
+
+    .btn-icon { width:30px; height:30px; border-radius:7px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; transition:background .15s; }
+    .btn-icon.view { background:rgba(59,130,246,.1); color:#2563eb; }
+    .btn-icon.view:hover { background:rgba(59,130,246,.2); }
+    .btn-icon.print { background:rgba(0,173,181,.1); color:#00ADB5; }
+    .btn-icon.print:hover { background:rgba(0,173,181,.2); }
+
+    .empty-state { text-align:center; padding:48px 20px; }
+    .empty-state i { font-size:36px; margin-bottom:10px; display:block; color:#d1d9e0; }
+    .empty-state p { font-size:13px; color:#90a4ae; }
+
+    /* Pagination */
+    .pagination-bar { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-top:1px solid #f0f4f8; flex-wrap:wrap; gap:10px; }
+    .pagination-info { font-size:12.5px; color:#78909c; }
+    .pagination-info strong { color:#1a2433; }
+    .pagination-links { display:flex; align-items:center; gap:4px; }
+    .page-btn { width:32px; height:32px; border-radius:8px; border:1px solid #e0e6ed; background:#fff; color:#64748b; font-size:12.5px; font-weight:600; font-family:'Poppins',sans-serif; cursor:pointer; display:flex; align-items:center; justify-content:center; text-decoration:none; transition:background .15s,border-color .15s; }
+    .page-btn:hover { background:#f0f4f8; }
+    .page-btn.active { background:#00ADB5; border-color:#00ADB5; color:#fff; }
+    .page-btn.disabled { opacity:.4; pointer-events:none; }
+
+    /* ── Scanner Overlay ─────────────────────────────── */
+    .scanner-overlay { display:none; position:fixed; inset:0; z-index:3000; background:rgba(13,27,42,.7); backdrop-filter:blur(6px); align-items:center; justify-content:center; }
+    .scanner-overlay.open { display:flex; }
+    .scanner-box { background:#fff; border-radius:18px; width:400px; overflow:hidden; box-shadow:0 24px 64px rgba(0,0,0,.25); animation:modalIn .25s cubic-bezier(.34,1.56,.64,1) both; }
+    .scanner-header { display:flex; align-items:center; justify-content:space-between; padding:18px 22px 14px; border-bottom:1px solid #f0f4f8; }
+    .scanner-title { font-size:15px; font-weight:700; color:#1a2433; display:flex; align-items:center; gap:8px; }
+    .scanner-title i { color:#00ADB5; }
+    .scanner-body { padding:20px 22px; }
+    #scannerVideo { width:100%; border-radius:10px; background:#0d1b2a; min-height:200px; object-fit:cover; }
+    .scanner-status { text-align:center; margin-top:10px; font-size:12.5px; color:#78909c; }
+    .scanner-status.found { color:#16a34a; font-weight:600; }
+    .scanner-status.error { color:#dc2626; }
+    .scanner-manual { margin-top:12px; display:flex; gap:8px; }
+    .scanner-manual input { flex:1; border:1px solid #e0e6ed; border-radius:8px; padding:9px 12px; font-size:13px; font-family:'Poppins',sans-serif; color:#1a2433; outline:none; background:#f8fafc; transition:border-color .2s; }
+    .scanner-manual input:focus { border-color:#00ADB5; box-shadow:0 0 0 3px rgba(0,173,181,.1); }
+    .btn-scan-submit { padding:9px 16px; border-radius:8px; border:none; background:#00ADB5; color:#fff; font-size:13px; font-weight:600; font-family:'Poppins',sans-serif; cursor:pointer; }
+
+    /* ── Receipt Modal ───────────────────────────────── */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(13,27,42,.55); backdrop-filter:blur(4px); z-index:2000; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    @keyframes modalIn { from{opacity:0;transform:scale(.92) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    .modal-close { width:30px; height:30px; border-radius:8px; border:none; background:#f0f4f8; color:#78909c; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; }
+    .modal-close:hover { background:#e0e6ed; color:#1a2433; }
+
+    /* Receipt */
+    .receipt-modal { background:#fff; border-radius:16px; width:100%; max-width:420px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.2); animation:modalIn .25s cubic-bezier(.34,1.56,.64,1) both; overflow:hidden; }
+    .receipt-modal-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f4f8; }
+    .receipt-modal-title { font-size:14px; font-weight:700; color:#1a2433; display:flex; align-items:center; gap:8px; }
+    .receipt-modal-title i { color:#00ADB5; }
+    .receipt-body { padding:0; overflow-y:auto; flex:1; }
+    .receipt-footer-btns { display:flex; gap:10px; padding:14px 20px; border-top:1px solid #f0f4f8; background:#fafbfc; }
+    .btn-print { flex:1; padding:9px; border:none; border-radius:9px; background:#00ADB5; color:#fff; font-size:13px; font-weight:600; font-family:'Poppins',sans-serif; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .btn-print:hover { background:#008C9E; }
+    .btn-new-txn { flex:1; padding:9px; border:1px solid #e0e6ed; border-radius:9px; background:#fff; color:#64748b; font-size:13px; font-weight:600; font-family:'Poppins',sans-serif; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
+    .btn-new-txn:hover { background:#f0f4f8; }
+
+    /* Receipt paper */
+    #receiptContent {
+        font-family: 'Courier New', monospace;
+        font-size: 12px; color: #1a2433;
+        padding: 20px 24px;
+        background: #fff;
+    }
+    .receipt-header-block { text-align:center; margin-bottom:14px; }
+    .receipt-hosp { font-size:13px; font-weight:700; margin-bottom:2px; }
+    .receipt-sub { font-size:10.5px; color:#64748b; }
+    .receipt-divider { border:none; border-top:1px dashed #ccc; margin:10px 0; }
+    .receipt-row { display:flex; justify-content:space-between; margin-bottom:3px; font-size:12px; }
+    .receipt-row.bold { font-weight:700; }
+    .receipt-row.total { font-size:13px; font-weight:800; border-top:1px dashed #ccc; padding-top:6px; margin-top:4px; }
+    .receipt-items { margin:8px 0; }
+    .receipt-item { margin-bottom:6px; }
+    .receipt-item-name { font-weight:600; font-size:12px; }
+    .receipt-item-detail { display:flex; justify-content:space-between; font-size:11.5px; color:#64748b; padding-left:8px; }
+    .receipt-footer { text-align:center; margin-top:14px; font-size:10.5px; color:#94a3b8; }
+
+    /* Toast */
+    .toast { position:fixed; bottom:26px; right:26px; background:#1a2433; color:#fff; padding:11px 16px; border-radius:10px; font-size:12.5px; font-weight:500; display:flex; align-items:center; gap:9px; box-shadow:0 8px 24px rgba(0,0,0,.2); z-index:9999; transform:translateY(70px); opacity:0; transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s; pointer-events:none; max-width:360px; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.success i { color:#4ade80; }
+    .toast.error   i { color:#f87171; }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- Summary Cards -->
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="stat-icon teal"><i class="fas fa-receipt"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ txn_today }}</span>
+            <span class="stat-label">Transactions Today</span>
+            <span class="stat-sub">Dispensing records</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-pills"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ units_today }}</span>
+            <span class="stat-label">Units Dispensed</span>
+            <span class="stat-sub">Today</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="fas fa-peso-sign"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">₱{{ revenue_today|floatformat:2 }}</span>
+            <span class="stat-label">Revenue Today</span>
+            <span class="stat-sub">Based on selling price</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple"><i class="fas fa-clock-rotate-left"></i></div>
+        <div class="stat-info">
+            <span class="stat-value">{{ txn_month }}</span>
+            <span class="stat-label">This Month</span>
+            <span class="stat-sub">Total transactions</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Layout -->
+<div class="dispensing-layout">
+
+    <!-- ══ LEFT: Medicine Search ══ -->
+    <div>
+        <div class="search-panel">
+            <div class="panel-toolbar">
+                <div class="panel-title"><i class="fas fa-pills"></i>Select Medicine</div>
+            </div>
+            <div class="search-wrap">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="medSearch" placeholder="Search medicine name, generic, strength…"
+                           oninput="debounceSearch(this.value)" autocomplete="off">
+                </div>
+                <button class="btn-scan-barcode" onclick="openScanner()">
+                    <i class="fas fa-barcode"></i> Scan
+                </button>
+            </div>
+            <div class="med-grid" id="medGrid">
+                <!-- populated by JS -->
+                <div class="med-grid-empty">
+                    <i class="fas fa-search"></i>
+                    <p>Search for a medicine or scan a barcode to begin.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="history-card">
+            <div class="history-toolbar">
+                <div class="history-title"><i class="fas fa-clock-rotate-left"></i>Recent Transactions</div>
+                <span class="count-badge">{{ paginator.count }} total</span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Txn #</th>
+                        <th>Date & Time</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Pharmacist</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in transactions %}
+                    <tr>
+                        <td>
+                            <span class="txn-badge">
+                                <i class="fas fa-receipt"></i>
+                                #{{ txn.pk|stringformat:"05d" }}
+                            </span>
+                        </td>
+                        <td style="white-space:nowrap;">
+                            <div style="font-size:12px;font-weight:600;color:#1a2433;">{{ txn.created_at|date:"M d, Y" }}</div>
+                            <div style="font-size:11px;color:#94a3b8;">{{ txn.created_at|date:"h:i A" }}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight:600;font-size:12.5px;">{{ txn.customer_name|default:"Walk-in" }}</div>
+                            {% if txn.prescription_no %}<div style="font-size:11px;color:#94a3b8;">Rx: {{ txn.prescription_no }}</div>{% endif %}
+                        </td>
+                        <td style="font-weight:600;">{{ txn.items.count }} item{{ txn.items.count|pluralize }}</td>
+                        <td style="font-weight:700;color:#00ADB5;">₱{{ txn.total_amount|floatformat:2 }}</td>
+                        <td>
+                            {% if txn.pharmacist %}
+                            <div class="user-chip">
+                                <div class="user-chip-avatar">
+                                    {% if txn.pharmacist.first_name %}{{ txn.pharmacist.first_name|first|upper }}{% else %}{{ txn.pharmacist.username|first|upper }}{% endif %}
+                                </div>
+                                {{ txn.pharmacist.get_full_name|default:txn.pharmacist.username }}
+                            </div>
+                            {% else %}<span style="color:#b0bec5;font-size:12px;">—</span>{% endif %}
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:5px;">
+                                <button class="btn-icon view" title="View Receipt"
+                                        onclick="viewReceipt({{ txn.pk }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn-icon print" title="Print Receipt"
+                                        onclick="printReceipt({{ txn.pk }})">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7"><div class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet today.</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if paginator.num_pages > 1 %}
+            <div class="pagination-bar">
+                <div class="pagination-info">
+                    Showing <strong>{{ page_obj.start_index }}</strong>–<strong>{{ page_obj.end_index }}</strong>
+                    of <strong>{{ paginator.count }}</strong> transactions
+                </div>
+                <div class="pagination-links">
+                    {% if page_obj.has_previous %}
+                    <a class="page-btn" href="?{% url_replace 'page' 1 %}">«</a>
+                    <a class="page-btn" href="?{% url_replace 'page' page_obj.previous_page_number %}">‹</a>
+                    {% else %}
+                    <span class="page-btn disabled">«</span>
+                    <span class="page-btn disabled">‹</span>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="page-btn active">{{ num }}</span>
+                        {% elif num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+                            <a class="page-btn" href="?{% url_replace 'page' num %}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <a class="page-btn" href="?{% url_replace 'page' page_obj.next_page_number %}">›</a>
+                    <a class="page-btn" href="?{% url_replace 'page' paginator.num_pages %}">»</a>
+                    {% else %}
+                    <span class="page-btn disabled">›</span>
+                    <span class="page-btn disabled">»</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ══ RIGHT: Cart ══ -->
+    <div class="cart-panel">
+        <div class="cart-header">
+            <div class="cart-title"><i class="fas fa-cart-shopping"></i>Cart <span class="cart-count" id="cartCount">0</span></div>
+            <button class="btn-clear-cart" onclick="clearCart()"><i class="fas fa-trash-can"></i> Clear</button>
+        </div>
+
+        <!-- Customer info -->
+        <div class="cart-customer">
+            <div class="customer-label">Customer / Patient Info</div>
+            <div class="customer-row">
+                <input type="text" class="customer-input" id="customerName" placeholder="Patient name (optional)">
+                <input type="text" class="customer-input" id="prescriptionNo" placeholder="Rx No. (optional)">
+            </div>
+            <input type="text" class="customer-input" id="customerNotes" placeholder="Notes…" style="width:100%;box-sizing:border-box;">
+        </div>
+
+        <!-- Cart items -->
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty" id="cartEmpty">
+                <i class="fas fa-cart-shopping"></i>
+                <p>Cart is empty.<br>Search and add medicines.</p>
+            </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="cart-totals">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span id="subtotalDisplay">₱0.00</span>
+            </div>
+            <div class="discount-row">
+                <input type="number" id="discountVal" placeholder="Discount" min="0" step="0.01" oninput="recalcTotals()">
+                <select id="discountType" onchange="recalcTotals()">
+                    <option value="amount">₱ Amount</option>
+                    <option value="percent">% Percent</option>
+                </select>
+            </div>
+            <div class="total-row">
+                <span>Discount</span>
+                <span id="discountDisplay">₱0.00</span>
+            </div>
+            <div class="total-row grand">
+                <span>TOTAL</span>
+                <span id="totalDisplay">₱0.00</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="cart-footer">
+            <button class="btn-dispense" id="btnDispense" onclick="submitDispensing()" disabled>
+                <i class="fas fa-check-circle"></i> Dispense & Generate Receipt
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Barcode Scanner Overlay -->
+<div class="scanner-overlay" id="scannerOverlay">
+    <div class="scanner-box">
+        <div class="scanner-header">
+            <div class="scanner-title"><i class="fas fa-barcode"></i>Scan Barcode</div>
+            <button class="modal-close" onclick="closeScanner()"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="scanner-body">
+            <video id="scannerVideo" autoplay playsinline></video>
+            <div class="scanner-status" id="scannerStatus">Point camera at a barcode…</div>
+            <div class="scanner-manual">
+                <input type="text" id="manualBarcode" placeholder="Or type barcode here"
+                       onkeydown="if(event.key==='Enter')lookupBarcode()">
+                <button class="btn-scan-submit" onclick="lookupBarcode()"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="modal-overlay" id="receiptModal">
+    <div class="receipt-modal">
+        <div class="receipt-modal-header">
+            <div class="receipt-modal-title"><i class="fas fa-receipt"></i>Transaction Receipt</div>
+            <button class="modal-close" onclick="closeModal('receiptModal')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="receipt-body">
+            <div id="receiptContent"></div>
+        </div>
+        <div class="receipt-footer-btns">
+            <button class="btn-print" onclick="printCurrentReceipt()"><i class="fas fa-print"></i> Print</button>
+            <button class="btn-new-txn" onclick="closeModal('receiptModal'); clearCart()"><i class="fas fa-plus"></i> New Transaction</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-circle-check"></i><span id="toastMsg"></span></div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+<script>
+const MEDICINE_SEARCH_URL  = "{% url 'medicine_search_ajax' %}";
+const DISPENSE_URL         = "{% url 'dispensing_create' %}";
+const RECEIPT_URL          = "{% url 'dispensing_receipt' pk=0 %}".replace('/0/', '/');
+const CSRF_TOKEN           = '{{ csrf_token }}';
+
+// ── Cart State ────────────────────────────────────────────────
+let cart = [];   // [{pk, name, strength, dosage, price, qty, stock}]
+
+// ── Medicine Search ───────────────────────────────────────────
+let searchTimer;
+function debounceSearch(q) {
+    clearTimeout(searchTimer);
+    if(!q.trim()) {
+        renderInitialGrid();
+        return;
+    }
+    searchTimer = setTimeout(() => fetchMedicines(q), 300);
+}
+
+function renderInitialGrid() {
+    document.getElementById('medGrid').innerHTML = `
+        <div class="med-grid-empty">
+            <i class="fas fa-search"></i>
+            <p>Search for a medicine or scan a barcode to begin.</p>
+        </div>`;
+}
+
+function fetchMedicines(q) {
+    fetch(MEDICINE_SEARCH_URL + '?q=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(data => renderMedGrid(data.results))
+        .catch(() => showToast('Search failed.', 'error'));
+}
+
+function renderMedGrid(results) {
+    const grid = document.getElementById('medGrid');
+    if(!results.length) {
+        grid.innerHTML = `<div class="med-grid-empty"><i class="fas fa-pills"></i><p>No medicines found.</p></div>`;
+        return;
+    }
+    grid.innerHTML = results.map(m => {
+        const stockClass = m.stock_status === 'out_of_stock' ? 'stock-out' :
+                           m.stock_status === 'low_stock'    ? 'stock-low' : 'stock-ok';
+        const stockLabel = m.stock_status === 'out_of_stock' ? 'Out of Stock' :
+                           m.stock_status === 'low_stock'    ? `Low: ${m.stock_quantity}` :
+                           `${m.stock_quantity} units`;
+        const isOut = m.stock_status === 'out_of_stock';
+        return `
+        <div class="med-card ${isOut ? 'out-of-stock' : ''}"
+             onclick="${isOut ? '' : `addToCart(${m.pk},'${escHtml(m.medicine_name)}','${escHtml(m.strength)}','${escHtml(m.dosage_form)}',${m.selling_price},${m.stock_quantity})`}">
+            <div class="med-card-add-icon"><i class="fas fa-plus"></i></div>
+            <div class="med-card-name">${escHtml(m.medicine_name)}</div>
+            <div class="med-card-generic">${escHtml(m.generic_name)}</div>
+            <div class="med-card-form">${escHtml(m.dosage_form)} · ${escHtml(m.strength)}</div>
+            <div class="med-card-bottom">
+                <span class="med-card-price">₱${parseFloat(m.selling_price || 0).toFixed(2)}</span>
+                <span class="med-card-stock ${stockClass}">${stockLabel}</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function escHtml(s) {
+    if(!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── Cart Operations ───────────────────────────────────────────
+function addToCart(pk, name, strength, dosage, price, stock) {
+    const existing = cart.find(i => i.pk === pk);
+    if(existing) {
+        if(existing.qty >= stock) {
+            showToast(`Only ${stock} units available.`, 'error');
+            return;
+        }
+        existing.qty++;
+    } else {
+        cart.push({ pk, name, strength, dosage, price: parseFloat(price), qty: 1, stock });
+    }
+    renderCart();
+    showToast(`${name} added to cart.`, 'success');
+}
+
+function changeQty(pk, delta) {
+    const item = cart.find(i => i.pk === pk);
+    if(!item) return;
+    item.qty += delta;
+    if(item.qty <= 0) {
+        cart = cart.filter(i => i.pk !== pk);
+    } else if(item.qty > item.stock) {
+        item.qty = item.stock;
+        showToast(`Only ${item.stock} units available.`, 'error');
+    }
+    renderCart();
+}
+
+function removeItem(pk) {
+    cart = cart.filter(i => i.pk !== pk);
+    renderCart();
+}
+
+function clearCart() {
+    cart = [];
+    document.getElementById('customerName').value = '';
+    document.getElementById('prescriptionNo').value = '';
+    document.getElementById('customerNotes').value = '';
+    document.getElementById('discountVal').value = '';
+    renderCart();
+}
+
+function renderCart() {
+    const container = document.getElementById('cartItems');
+    const emptyEl   = document.getElementById('cartEmpty');
+    document.getElementById('cartCount').textContent = cart.reduce((s, i) => s + i.qty, 0);
+
+    if(!cart.length) {
+        container.innerHTML = `<div class="cart-empty" id="cartEmpty">
+            <i class="fas fa-cart-shopping"></i>
+            <p>Cart is empty.<br>Search and add medicines.</p></div>`;
+        document.getElementById('btnDispense').disabled = true;
+        recalcTotals();
+        return;
+    }
+
+    container.innerHTML = cart.map(item => `
+        <div class="cart-item">
+            <div class="cart-item-info">
+                <div class="cart-item-name">${escHtml(item.name)} ${escHtml(item.strength)}</div>
+                <div class="cart-item-price">₱${item.price.toFixed(2)} / unit · ${escHtml(item.dosage)}</div>
+            </div>
+            <div class="cart-qty-ctrl">
+                <button class="qty-btn" onclick="changeQty(${item.pk}, -1)">−</button>
+                <span class="qty-val">${item.qty}</span>
+                <button class="qty-btn" onclick="changeQty(${item.pk}, 1)">+</button>
+            </div>
+            <div class="cart-item-subtotal">₱${(item.price * item.qty).toFixed(2)}</div>
+            <button class="btn-remove-item" onclick="removeItem(${item.pk})" title="Remove">
+                <i class="fas fa-xmark"></i>
+            </button>
+        </div>`).join('');
+
+    document.getElementById('btnDispense').disabled = false;
+    recalcTotals();
+}
+
+function recalcTotals() {
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const dVal  = parseFloat(document.getElementById('discountVal').value) || 0;
+    const dType = document.getElementById('discountType').value;
+    let discount = dType === 'percent' ? subtotal * dVal / 100 : dVal;
+    discount = Math.min(discount, subtotal);
+    const total = subtotal - discount;
+    document.getElementById('subtotalDisplay').textContent = `₱${subtotal.toFixed(2)}`;
+    document.getElementById('discountDisplay').textContent = `₱${discount.toFixed(2)}`;
+    document.getElementById('totalDisplay').textContent    = `₱${total.toFixed(2)}`;
+}
+
+// ── Submit Dispensing ─────────────────────────────────────────
+function submitDispensing() {
+    if(!cart.length) return;
+    const btn = document.getElementById('btnDispense');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing…';
+
+    const dVal  = parseFloat(document.getElementById('discountVal').value) || 0;
+    const dType = document.getElementById('discountType').value;
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    let discount = dType === 'percent' ? subtotal * dVal / 100 : dVal;
+    discount = Math.min(discount, subtotal);
+
+    const payload = {
+        customer_name:   document.getElementById('customerName').value.trim(),
+        prescription_no: document.getElementById('prescriptionNo').value.trim(),
+        notes:           document.getElementById('customerNotes').value.trim(),
+        discount_amount: discount.toFixed(2),
+        items: cart.map(i => ({ medicine_pk: i.pk, quantity: i.qty, unit_price: i.price })),
+    };
+
+    fetch(DISPENSE_URL, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.success) {
+            showToast('Dispensing recorded successfully!', 'success');
+            renderReceipt(data.receipt);
+            openModal('receiptModal');
+            cart = [];
+            renderCart();
+            setTimeout(() => window.location.reload(), 3000);
+        } else {
+            showToast(data.error || 'Something went wrong.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Dispense & Generate Receipt';
+        }
+    })
+    .catch(() => {
+        showToast('Network error.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Dispense & Generate Receipt';
+    });
+}
+
+// ── Receipt Rendering ─────────────────────────────────────────
+let currentReceiptHtml = '';
+
+function renderReceipt(r) {
+    const html = `
+    <div id="receiptContent">
+        <div class="receipt-header-block">
+            <div class="receipt-hosp">Mayor Hilarion A. Ramiro Sr.</div>
+            <div class="receipt-hosp">Medical Center</div>
+            <div class="receipt-sub">Electronic Pharmacy Inventory System</div>
+            <div class="receipt-sub" style="margin-top:4px;">OFFICIAL RECEIPT</div>
+        </div>
+        <hr class="receipt-divider">
+        <div class="receipt-row"><span>Receipt #</span><span>${String(r.pk).padStart(5,'0')}</span></div>
+        <div class="receipt-row"><span>Date</span><span>${r.date}</span></div>
+        <div class="receipt-row"><span>Pharmacist</span><span>${r.pharmacist}</span></div>
+        ${r.customer_name ? `<div class="receipt-row"><span>Patient</span><span>${r.customer_name}</span></div>` : ''}
+        ${r.prescription_no ? `<div class="receipt-row"><span>Rx No.</span><span>${r.prescription_no}</span></div>` : ''}
+        <hr class="receipt-divider">
+        <div class="receipt-items">
+            ${r.items.map(item => `
+            <div class="receipt-item">
+                <div class="receipt-item-name">${item.name} ${item.strength}</div>
+                <div class="receipt-item-detail">
+                    <span>${item.qty} x ₱${parseFloat(item.unit_price).toFixed(2)}</span>
+                    <span>₱${parseFloat(item.subtotal).toFixed(2)}</span>
+                </div>
+            </div>`).join('')}
+        </div>
+        <hr class="receipt-divider">
+        <div class="receipt-row"><span>Subtotal</span><span>₱${parseFloat(r.subtotal).toFixed(2)}</span></div>
+        ${parseFloat(r.discount) > 0 ? `<div class="receipt-row"><span>Discount</span><span>-₱${parseFloat(r.discount).toFixed(2)}</span></div>` : ''}
+        <div class="receipt-row total bold"><span>TOTAL</span><span>₱${parseFloat(r.total).toFixed(2)}</span></div>
+        <hr class="receipt-divider">
+        <div class="receipt-footer">
+            <div>Thank you for your visit!</div>
+            <div style="margin-top:4px;">This serves as your official receipt.</div>
+        </div>
+    </div>`;
+    document.getElementById('receiptContent').outerHTML = html;
+    currentReceiptHtml = html;
+}
+
+function viewReceipt(pk) {
+    fetch(RECEIPT_URL + pk + '/')
+        .then(r => r.json())
+        .then(data => { renderReceipt(data); openModal('receiptModal'); })
+        .catch(() => showToast('Could not load receipt.', 'error'));
+}
+
+function printReceipt(pk) {
+    fetch(RECEIPT_URL + pk + '/')
+        .then(r => r.json())
+        .then(data => { renderReceipt(data); printCurrentReceipt(); })
+        .catch(() => showToast('Could not load receipt.', 'error'));
+}
+
+function printCurrentReceipt() {
+    const content = document.getElementById('receiptContent').innerHTML;
+    const w = window.open('', '_blank', 'width=400,height=600');
+    w.document.write(`
+        <html><head><title>Receipt</title>
+        <style>
+            body { font-family:'Courier New',monospace; font-size:12px; padding:20px; color:#000; }
+            .receipt-row { display:flex; justify-content:space-between; margin-bottom:3px; }
+            .receipt-row.bold { font-weight:700; }
+            .receipt-row.total { font-size:14px; font-weight:800; border-top:1px dashed #ccc; padding-top:6px; }
+            .receipt-header-block { text-align:center; margin-bottom:14px; }
+            .receipt-hosp { font-size:13px; font-weight:700; margin-bottom:2px; }
+            .receipt-sub { font-size:10.5px; color:#555; }
+            .receipt-divider { border:none; border-top:1px dashed #ccc; margin:10px 0; }
+            .receipt-item { margin-bottom:6px; }
+            .receipt-item-name { font-weight:600; }
+            .receipt-item-detail { display:flex; justify-content:space-between; padding-left:8px; color:#555; }
+            .receipt-footer { text-align:center; margin-top:14px; font-size:10.5px; color:#888; }
+        </style></head><body>${content}</body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); w.close(); }, 500);
+}
+
+// ── Barcode Scanner ───────────────────────────────────────────
+let codeReader = null;
+function openScanner() {
+    document.getElementById('scannerOverlay').classList.add('open');
+    startCamera();
+}
+function closeScanner() {
+    stopCamera();
+    document.getElementById('scannerOverlay').classList.remove('open');
+    document.getElementById('scannerStatus').textContent = 'Point camera at a barcode…';
+    document.getElementById('manualBarcode').value = '';
+}
+function startCamera() {
+    if(typeof ZXing === 'undefined') {
+        document.getElementById('scannerStatus').textContent = 'Scanner unavailable. Use manual input.';
+        return;
+    }
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    codeReader.listVideoInputDevices().then(devices => {
+        if(!devices.length) throw new Error('No camera found.');
+        const id = devices[devices.length-1].deviceId;
+        return codeReader.decodeFromVideoDevice(id, document.getElementById('scannerVideo'),
+            result => { if(result) handleBarcodeScan(result.getText()); });
+    }).catch(err => {
+        document.getElementById('scannerStatus').textContent = 'Camera: ' + err.message;
+        document.getElementById('scannerStatus').className = 'scanner-status error';
+    });
+}
+function stopCamera() { if(codeReader) { codeReader.reset(); codeReader = null; } }
+
+function handleBarcodeScan(barcode) {
+    stopCamera();
+    document.getElementById('scannerStatus').textContent = `Looking up: ${barcode}…`;
+    fetch(MEDICINE_SEARCH_URL + '?q=' + encodeURIComponent(barcode))
+        .then(r => r.json())
+        .then(data => {
+            if(data.results.length) {
+                const m = data.results[0];
+                closeScanner();
+                if(m.stock_status === 'out_of_stock') {
+                    showToast(`${m.medicine_name} is out of stock.`, 'error');
+                } else {
+                    addToCart(m.pk, m.medicine_name, m.strength, m.dosage_form,
+                              m.selling_price, m.stock_quantity);
+                    // Also show in grid
+                    document.getElementById('medSearch').value = m.medicine_name;
+                    renderMedGrid(data.results);
+                }
+            } else {
+                document.getElementById('scannerStatus').textContent = `"${barcode}" not found.`;
+                document.getElementById('scannerStatus').className = 'scanner-status error';
+            }
+        }).catch(() => {
+            document.getElementById('scannerStatus').textContent = 'Lookup failed.';
+            document.getElementById('scannerStatus').className = 'scanner-status error';
+        });
+}
+function lookupBarcode() {
+    const val = document.getElementById('manualBarcode').value.trim();
+    if(val) handleBarcodeScan(val);
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeScanner(); });
+
+// ── Modal helpers ─────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
+});
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.className = `toast ${type}`;
+    toast.querySelector('i').className = type === 'success' ? 'fas fa-circle-check' : 'fas fa-circle-xmark';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3200);
+}
+
+{% if messages %}{% for message in messages %}
+    showToast("{{ message|escapejs }}", "{% if 'error' in message.tags %}error{% else %}success{% endif %}");
+{% endfor %}{% endif %}
+</script>
+{% endblock %}

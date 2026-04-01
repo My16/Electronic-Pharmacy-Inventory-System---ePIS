@@ -1,0 +1,609 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ePIS — Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block breadcrumb %}Settings{% endblock %}
+{% block nav_settings %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Layout ──────────────────────────────────────── */
+    .settings-layout {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 20px;
+        align-items: start;
+    }
+
+    /* ── Sidebar Nav ─────────────────────────────────── */
+    .settings-nav {
+        background: #fff; border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7; overflow: hidden;
+        position: sticky; top: 80px;
+        animation: slideUp .4s ease both;
+    }
+    @keyframes slideUp {
+        from { opacity:0; transform:translateY(14px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    .settings-nav-header {
+        padding: 16px 18px 12px;
+        border-bottom: 1px solid #f0f4f8;
+        font-size: 10.5px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .8px;
+        color: #94a3b8;
+    }
+    .settings-nav-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 11px 18px; font-size: 13px; font-weight: 600;
+        color: #64748b; cursor: pointer; border: none;
+        background: transparent; width: 100%; text-align: left;
+        font-family: 'Poppins', sans-serif;
+        border-left: 3px solid transparent;
+        transition: background .15s, color .15s, border-color .15s;
+        text-decoration: none;
+    }
+    .settings-nav-item:hover { background: #f8fafc; color: #1a2433; }
+    .settings-nav-item.active {
+        background: rgba(0,173,181,.06);
+        color: #00ADB5; border-left-color: #00ADB5;
+    }
+    .settings-nav-item i { width: 16px; text-align: center; font-size: 13px; }
+
+    /* ── Settings Panels ─────────────────────────────── */
+    .settings-content { display: flex; flex-direction: column; gap: 20px; }
+
+    .settings-panel {
+        background: #fff; border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7; overflow: hidden;
+        animation: slideUp .4s ease .1s both;
+    }
+    .settings-panel:nth-child(2) { animation-delay: .17s; }
+    .settings-panel:nth-child(3) { animation-delay: .24s; }
+
+    .panel-header {
+        display: flex; align-items: center; gap: 12px;
+        padding: 18px 22px 14px;
+        border-bottom: 1px solid #f0f4f8;
+    }
+    .panel-header-icon {
+        width: 38px; height: 38px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px; flex-shrink: 0;
+    }
+    .panel-header-icon.teal   { background: rgba(0,173,181,.12);  color: #00ADB5; }
+    .panel-header-icon.blue   { background: rgba(59,130,246,.12); color: #2563eb; }
+    .panel-header-icon.orange { background: rgba(245,158,11,.12); color: #d97706; }
+    .panel-header-icon.red    { background: rgba(239,68,68,.12);  color: #dc2626; }
+
+    .panel-header-text { display: flex; flex-direction: column; }
+    .panel-title { font-size: 14px; font-weight: 700; color: #1a2433; }
+    .panel-desc  { font-size: 11.5px; color: #94a3b8; margin-top: 1px; }
+
+    .panel-body { padding: 22px; }
+
+    /* ── Avatar Section ──────────────────────────────── */
+    .avatar-section {
+        display: flex; align-items: center; gap: 20px;
+        padding: 16px 20px; background: #f8fafc;
+        border-radius: 12px; margin-bottom: 20px;
+        border: 1px solid #eef2f7;
+    }
+    .avatar-circle {
+        width: 64px; height: 64px; border-radius: 16px;
+        background: linear-gradient(135deg, #00ADB5, #006d73);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 24px; font-weight: 800; color: #fff;
+        flex-shrink: 0; letter-spacing: -1px;
+    }
+    .avatar-info { flex: 1; }
+    .avatar-name { font-size: 15px; font-weight: 700; color: #1a2433; }
+    .avatar-role {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 11px; font-weight: 700; padding: 3px 9px;
+        border-radius: 20px; margin-top: 4px;
+    }
+    .avatar-role.admin  { background: rgba(239,68,68,.1);  color: #dc2626; }
+    .avatar-role.staff  { background: rgba(0,173,181,.1);  color: #00ADB5; }
+    .avatar-role.user   { background: rgba(59,130,246,.1); color: #2563eb; }
+    .avatar-joined { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+
+    /* ── Form ────────────────────────────────────────── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group.full { grid-column: span 2; }
+    .form-label {
+        font-size: 11.5px; font-weight: 600; color: #64748b; letter-spacing: .3px;
+    }
+    .form-label span { color: #dc2626; margin-left: 2px; }
+    .form-control {
+        width: 100%; padding: 9px 12px;
+        border: 1px solid #e0e6ed; border-radius: 8px;
+        font-size: 13px; font-family: 'Poppins', sans-serif;
+        color: #1a2433; outline: none; background: #f8fafc;
+        transition: border-color .2s, box-shadow .2s;
+        box-sizing: border-box;
+    }
+    .form-control:focus {
+        border-color: #00ADB5;
+        box-shadow: 0 0 0 3px rgba(0,173,181,.1);
+        background: #fff;
+    }
+    .form-control:disabled {
+        background: #f0f4f8; color: #94a3b8; cursor: not-allowed;
+    }
+    .form-hint { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+    /* Password strength */
+    .pw-strength-bar {
+        height: 4px; border-radius: 2px; background: #f0f4f8;
+        margin-top: 6px; overflow: hidden;
+    }
+    .pw-strength-fill {
+        height: 100%; border-radius: 2px;
+        transition: width .3s, background .3s;
+        width: 0%;
+    }
+    .pw-strength-label {
+        font-size: 11px; font-weight: 600; margin-top: 4px;
+        display: none;
+    }
+
+    /* ── Panel Footer ────────────────────────────────── */
+    .panel-footer {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 22px; border-top: 1px solid #f0f4f8;
+        background: #fafbfc;
+    }
+    .panel-footer-note { font-size: 11.5px; color: #94a3b8; }
+
+    .btn-save {
+        display: flex; align-items: center; gap: 7px;
+        padding: 9px 22px; border: none; border-radius: 9px;
+        background: #00ADB5; color: #fff; font-size: 13px;
+        font-weight: 600; font-family: 'Poppins', sans-serif;
+        cursor: pointer; transition: background .2s, transform .15s;
+        box-shadow: 0 2px 8px rgba(0,173,181,.25);
+    }
+    .btn-save:hover { background: #008C9E; transform: translateY(-1px); }
+
+    .btn-danger-save {
+        display: flex; align-items: center; gap: 7px;
+        padding: 9px 22px; border: none; border-radius: 9px;
+        background: #dc2626; color: #fff; font-size: 13px;
+        font-weight: 600; font-family: 'Poppins', sans-serif;
+        cursor: pointer; transition: background .2s, transform .15s;
+        box-shadow: 0 2px 8px rgba(220,38,38,.2);
+    }
+    .btn-danger-save:hover { background: #b91c1c; transform: translateY(-1px); }
+
+    /* ── Info Cards (read-only) ──────────────────────── */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .info-item {
+        background: #f8fafc; border-radius: 10px;
+        padding: 12px 15px; border: 1px solid #eef2f7;
+    }
+    .info-item-label {
+        font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .6px; color: #94a3b8; margin-bottom: 4px;
+    }
+    .info-item-value { font-size: 13px; font-weight: 600; color: #1a2433; }
+    .info-item-value.muted { color: #94a3b8; font-weight: 400; font-style: italic; }
+
+    /* ── Danger Zone ─────────────────────────────────── */
+    .danger-zone {
+        background: #fff; border-radius: 14px;
+        border: 1px solid rgba(239,68,68,.2);
+        box-shadow: 0 2px 12px rgba(239,68,68,.05);
+        overflow: hidden; animation: slideUp .4s ease .3s both;
+    }
+    .danger-header {
+        display: flex; align-items: center; gap: 10px;
+        padding: 14px 22px; background: rgba(239,68,68,.04);
+        border-bottom: 1px solid rgba(239,68,68,.1);
+        font-size: 13px; font-weight: 700; color: #dc2626;
+    }
+    .danger-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 16px 22px; border-bottom: 1px solid #fef2f2;
+        gap: 16px;
+    }
+    .danger-item:last-child { border-bottom: none; }
+    .danger-item-text { flex: 1; }
+    .danger-item-title { font-size: 13px; font-weight: 600; color: #1a2433; margin-bottom: 2px; }
+    .danger-item-desc  { font-size: 12px; color: #94a3b8; }
+    .btn-outline-danger {
+        padding: 7px 16px; border-radius: 8px;
+        border: 1px solid #dc2626; background: #fff;
+        color: #dc2626; font-size: 12.5px; font-weight: 600;
+        font-family: 'Poppins', sans-serif; cursor: pointer;
+        transition: background .15s, color .15s; white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .btn-outline-danger:hover { background: #dc2626; color: #fff; }
+
+    /* ── Toast ───────────────────────────────────────── */
+    .toast { position:fixed; bottom:26px; right:26px; background:#1a2433; color:#fff; padding:11px 16px; border-radius:10px; font-size:12.5px; font-weight:500; display:flex; align-items:center; gap:9px; box-shadow:0 8px 24px rgba(0,0,0,.2); z-index:9999; transform:translateY(70px); opacity:0; transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s; pointer-events:none; max-width:360px; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.success i { color:#4ade80; }
+    .toast.error   i { color:#f87171; }
+
+    /* ── Modal ───────────────────────────────────────── */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(13,27,42,.55); backdrop-filter:blur(4px); z-index:2000; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-sm { background:#fff; border-radius:16px; width:100%; max-width:380px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.2); animation:modalIn .25s cubic-bezier(.34,1.56,.64,1) both; }
+    @keyframes modalIn { from{opacity:0;transform:scale(.92) translateY(16px)} to{opacity:1;transform:scale(1) translateY(0)} }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; padding:18px 22px 14px; border-bottom:1px solid #f0f4f8; }
+    .modal-title { font-size:15px; font-weight:700; color:#1a2433; display:flex; align-items:center; gap:9px; }
+    .modal-title i { color:#dc2626; }
+    .modal-close { width:30px; height:30px; border-radius:8px; border:none; background:#f0f4f8; color:#78909c; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; }
+    .modal-close:hover { background:#e0e6ed; color:#1a2433; }
+    .modal-body { padding:20px 22px; font-size:13px; color:#64748b; line-height:1.6; }
+    .modal-footer { display:flex; justify-content:flex-end; gap:10px; padding:14px 22px; border-top:1px solid #f0f4f8; background:#fafbfc; }
+    .btn-cancel { padding:8px 18px; border-radius:8px; border:1px solid #e0e6ed; background:#fff; color:#64748b; font-size:12.5px; font-weight:600; font-family:'Poppins',sans-serif; cursor:pointer; }
+    .btn-cancel:hover { background:#f0f4f8; }
+
+    @media (max-width: 900px) {
+        .settings-layout { grid-template-columns: 1fr; }
+        .settings-nav { position: static; }
+        .form-grid, .info-grid { grid-template-columns: 1fr; }
+        .form-group.full { grid-column: span 1; }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="settings-layout">
+
+    <!-- ══ LEFT: NAV ══ -->
+    <div class="settings-nav">
+        <div class="settings-nav-header">Settings</div>
+        <a href="#profile"  class="settings-nav-item active" onclick="scrollTo('profile',  this)"><i class="fas fa-user"></i> Profile</a>
+        <a href="#password" class="settings-nav-item"        onclick="scrollTo('password', this)"><i class="fas fa-lock"></i> Password</a>
+        <a href="#account"  class="settings-nav-item"        onclick="scrollTo('account',  this)"><i class="fas fa-circle-info"></i> Account Info</a>
+        <a href="#danger"   class="settings-nav-item"        onclick="scrollTo('danger',   this)"><i class="fas fa-triangle-exclamation"></i> Danger Zone</a>
+    </div>
+
+    <!-- ══ RIGHT: PANELS ══ -->
+    <div class="settings-content">
+
+        <!-- ── Profile Panel ── -->
+        <div class="settings-panel" id="profile">
+            <div class="panel-header">
+                <div class="panel-header-icon teal"><i class="fas fa-user"></i></div>
+                <div class="panel-header-text">
+                    <div class="panel-title">Profile Information</div>
+                    <div class="panel-desc">Update your name and email address</div>
+                </div>
+            </div>
+            <div class="panel-body">
+
+                <!-- Avatar preview -->
+                <div class="avatar-section">
+                    <div class="avatar-circle" id="avatarInitials">
+                        {% if user_obj.first_name %}{{ user_obj.first_name|first|upper }}{% if user_obj.last_name %}{{ user_obj.last_name|first|upper }}{% endif %}{% else %}{{ user_obj.username|first|upper }}{% endif %}
+                    </div>
+                    <div class="avatar-info">
+                        <div class="avatar-name" id="avatarName">
+                            {{ user_obj.get_full_name|default:user_obj.username }}
+                        </div>
+                        <div>
+                            {% with role=user_obj.profile.role %}
+                            <span class="avatar-role {{ role }}">
+                                <i class="fas {% if role == 'admin' %}fa-shield-halved{% elif role == 'staff' %}fa-user-tie{% else %}fa-user{% endif %}"></i>
+                                {{ user_obj.profile.get_role_display }}
+                            </span>
+                            {% endwith %}
+                        </div>
+                        <div class="avatar-joined">
+                            Member since {{ user_obj.date_joined|date:"F Y" }}
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" action="{% url 'settings' %}" id="profileForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+                    <div class="form-grid three">
+                        <div class="form-group">
+                            <label class="form-label">First Name <span>*</span></label>
+                            <input type="text" name="first_name" class="form-control"
+                                   value="{{ user_obj.first_name }}"
+                                   oninput="updatePreview()" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Middle Name</label>
+                            <input type="text" name="middle_name" class="form-control"
+                                   value="{{ user_obj.profile.middle_name }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" name="last_name" class="form-control"
+                                   value="{{ user_obj.last_name }}"
+                                   oninput="updatePreview()">
+                        </div>
+                        <div class="form-group full" style="grid-column:span 3;">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" name="email" class="form-control"
+                                   value="{{ user_obj.email }}"
+                                   placeholder="your@email.com">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="panel-footer">
+                <span class="panel-footer-note"><i class="fas fa-circle-info" style="color:#00ADB5;margin-right:5px;"></i>Username cannot be changed.</span>
+                <button class="btn-save" onclick="document.getElementById('profileForm').submit()">
+                    <i class="fas fa-floppy-disk"></i> Save Profile
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Password Panel ── -->
+        <div class="settings-panel" id="password">
+            <div class="panel-header">
+                <div class="panel-header-icon blue"><i class="fas fa-lock"></i></div>
+                <div class="panel-header-text">
+                    <div class="panel-title">Change Password</div>
+                    <div class="panel-desc">Use a strong password with at least 8 characters</div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <form method="POST" action="{% url 'settings' %}" id="passwordForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+                    <div class="form-grid">
+                        <div class="form-group full" style="grid-column:span 2;">
+                            <label class="form-label">Current Password <span>*</span></label>
+                            <input type="password" name="current_password" class="form-control"
+                                   placeholder="Enter your current password" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password <span>*</span></label>
+                            <input type="password" name="new_password" id="newPassword"
+                                   class="form-control" placeholder="At least 8 characters"
+                                   oninput="checkPasswordStrength(this.value)" required>
+                            <div class="pw-strength-bar">
+                                <div class="pw-strength-fill" id="pwStrengthFill"></div>
+                            </div>
+                            <div class="pw-strength-label" id="pwStrengthLabel"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password <span>*</span></label>
+                            <input type="password" name="confirm_password" id="confirmPassword"
+                                   class="form-control" placeholder="Repeat new password"
+                                   oninput="checkConfirm()" required>
+                            <div class="form-hint" id="confirmHint"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="panel-footer">
+                <span class="panel-footer-note"><i class="fas fa-shield-halved" style="color:#2563eb;margin-right:5px;"></i>You'll stay logged in after changing your password.</span>
+                <button class="btn-save" style="background:#2563eb;box-shadow:0 2px 8px rgba(37,99,235,.25);"
+                        onclick="submitPassword()">
+                    <i class="fas fa-key"></i> Update Password
+                </button>
+            </div>
+        </div>
+
+        <!-- ── Account Info Panel ── -->
+        <div class="settings-panel" id="account">
+            <div class="panel-header">
+                <div class="panel-header-icon orange"><i class="fas fa-circle-info"></i></div>
+                <div class="panel-header-text">
+                    <div class="panel-title">Account Information</div>
+                    <div class="panel-desc">Read-only details about your account</div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-item-label"><i class="fas fa-at"></i> Username</div>
+                        <div class="info-item-value">{{ user_obj.username }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label"><i class="fas fa-id-badge"></i> Role</div>
+                        <div class="info-item-value">{{ user_obj.profile.get_role_display }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label"><i class="fas fa-calendar"></i> Date Joined</div>
+                        <div class="info-item-value">{{ user_obj.date_joined|date:"F d, Y" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label"><i class="fas fa-clock"></i> Last Login</div>
+                        <div class="info-item-value">
+                            {% if user_obj.last_login %}
+                                {{ user_obj.last_login|date:"F d, Y · h:i A" }}
+                            {% else %}
+                                <span class="muted">Never</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label"><i class="fas fa-circle-check"></i> Account Status</div>
+                        <div class="info-item-value" style="color:{% if user_obj.is_active %}#16a34a{% else %}#dc2626{% endif %};">
+                            {% if user_obj.is_active %}Active{% else %}Inactive{% endif %}
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-item-label"><i class="fas fa-envelope"></i> Email</div>
+                        <div class="info-item-value {% if not user_obj.email %}muted{% endif %}">
+                            {{ user_obj.email|default:"Not set" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Danger Zone ── -->
+        <div class="danger-zone" id="danger">
+            <div class="danger-header">
+                <i class="fas fa-triangle-exclamation"></i> Danger Zone
+            </div>
+            <div class="danger-item">
+                <div class="danger-item-text">
+                    <div class="danger-item-title">Sign out of all sessions</div>
+                    <div class="danger-item-desc">Log out from all devices where you are currently signed in.</div>
+                </div>
+                <button class="btn-outline-danger" onclick="openModal('signoutModal')">
+                    <i class="fas fa-right-from-bracket"></i> Sign Out All
+                </button>
+            </div>
+            <div class="danger-item">
+                <div class="danger-item-text">
+                    <div class="danger-item-title">Deactivate account</div>
+                    <div class="danger-item-desc">Contact an administrator to deactivate your account.</div>
+                </div>
+                <button class="btn-outline-danger" disabled style="opacity:.4;cursor:not-allowed;">
+                    <i class="fas fa-ban"></i> Contact Admin
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Sign Out Modal -->
+<div class="modal-overlay" id="signoutModal">
+    <div class="modal-sm">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-right-from-bracket"></i>Sign Out All Sessions</div>
+            <button class="modal-close" onclick="closeModal('signoutModal')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            This will log you out from all devices. You will need to sign in again on each device.
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal('signoutModal')">Cancel</button>
+            <a href="{% url 'logout' %}" class="btn-danger-save" style="text-decoration:none;padding:8px 18px;border-radius:8px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-right-from-bracket"></i> Sign Out
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-circle-check"></i><span id="toastMsg"></span></div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// ── Sidebar active nav ────────────────────────────────────────
+function scrollTo(id, el) {
+    event.preventDefault();
+    document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Highlight nav on scroll
+const sections = ['profile', 'password', 'account', 'danger'];
+window.addEventListener('scroll', () => {
+    let current = 'profile';
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if(el && el.getBoundingClientRect().top <= 120) current = id;
+    });
+    document.querySelectorAll('.settings-nav-item').forEach(item => {
+        item.classList.toggle('active', item.getAttribute('href') === '#' + current);
+    });
+}, { passive: true });
+
+// ── Avatar live preview ───────────────────────────────────────
+function updatePreview() {
+    const first = document.querySelector('[name="first_name"]').value.trim();
+    const last  = document.querySelector('[name="last_name"]').value.trim();
+    const initials = (first ? first[0].toUpperCase() : '') + (last ? last[0].toUpperCase() : '');
+    document.getElementById('avatarInitials').textContent = initials || '?';
+    const fullName = [first, last].filter(Boolean).join(' ');
+    document.getElementById('avatarName').textContent = fullName || 'Your Name';
+}
+
+// ── Password strength ─────────────────────────────────────────
+function checkPasswordStrength(pw) {
+    const fill  = document.getElementById('pwStrengthFill');
+    const label = document.getElementById('pwStrengthLabel');
+    if(!pw) { fill.style.width='0%'; label.style.display='none'; return; }
+
+    let score = 0;
+    if(pw.length >= 8)  score++;
+    if(pw.length >= 12) score++;
+    if(/[A-Z]/.test(pw)) score++;
+    if(/[0-9]/.test(pw)) score++;
+    if(/[^A-Za-z0-9]/.test(pw)) score++;
+
+    const levels = [
+        { pct:'20%', color:'#dc2626', text:'Very weak'  },
+        { pct:'40%', color:'#d97706', text:'Weak'       },
+        { pct:'60%', color:'#d97706', text:'Fair'       },
+        { pct:'80%', color:'#16a34a', text:'Strong'     },
+        { pct:'100%',color:'#16a34a', text:'Very strong'},
+    ];
+    const lvl = levels[Math.min(score, 4)];
+    fill.style.width     = lvl.pct;
+    fill.style.background = lvl.color;
+    label.style.display  = 'block';
+    label.style.color    = lvl.color;
+    label.textContent    = lvl.text;
+    checkConfirm();
+}
+
+function checkConfirm() {
+    const pw  = document.getElementById('newPassword').value;
+    const cfm = document.getElementById('confirmPassword').value;
+    const hint = document.getElementById('confirmHint');
+    if(!cfm) { hint.textContent=''; return; }
+    if(pw === cfm) {
+        hint.style.color = '#16a34a';
+        hint.textContent = '✓ Passwords match';
+    } else {
+        hint.style.color = '#dc2626';
+        hint.textContent = '✗ Passwords do not match';
+    }
+}
+
+function submitPassword() {
+    const pw  = document.getElementById('newPassword').value;
+    const cfm = document.getElementById('confirmPassword').value;
+    if(pw !== cfm) {
+        showToast('Passwords do not match.', 'error');
+        return;
+    }
+    if(pw.length < 8) {
+        showToast('Password must be at least 8 characters.', 'error');
+        return;
+    }
+    document.getElementById('passwordForm').submit();
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if(e.target === o) o.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(o => o.classList.remove('open'));
+});
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    toast.className = `toast ${type}`;
+    toast.querySelector('i').className = type === 'success' ? 'fas fa-circle-check' : 'fas fa-circle-xmark';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3200);
+}
+
+{% if messages %}{% for message in messages %}
+    showToast("{{ message|escapejs }}", "{% if 'error' in message.tags %}error{% else %}success{% endif %}");
+{% endfor %}{% endif %}
+</script>
+{% endblock %}

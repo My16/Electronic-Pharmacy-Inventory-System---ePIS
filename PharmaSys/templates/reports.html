@@ -1,0 +1,875 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ePIS — Reports & Analytics{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+{% block breadcrumb %}Reports{% endblock %}
+{% block nav_reports %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Date range bar ──────────────────────────────── */
+    .date-bar {
+        display: flex; align-items: center; gap: 10px;
+        background: #fff; border-radius: 12px;
+        padding: 14px 20px; margin-bottom: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7;
+        flex-wrap: wrap;
+    }
+    .date-bar-label { font-size: 12px; font-weight: 700; color: #78909c; }
+    .date-input {
+        border: 1px solid #e0e6ed; border-radius: 8px;
+        padding: 7px 11px; font-size: 12.5px;
+        font-family: 'Poppins', sans-serif; color: #1a2433;
+        outline: none; background: #f8fafc;
+        transition: border-color .2s;
+    }
+    .date-input:focus { border-color: #00ADB5; box-shadow: 0 0 0 3px rgba(0,173,181,.1); }
+    .btn-apply {
+        padding: 7px 18px; border-radius: 8px;
+        border: none; background: #00ADB5; color: #fff;
+        font-size: 12.5px; font-weight: 600;
+        font-family: 'Poppins', sans-serif; cursor: pointer;
+        transition: background .2s;
+    }
+    .btn-apply:hover { background: #008C9E; }
+    .date-shortcuts { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+    .shortcut-btn {
+        padding: 5px 12px; border-radius: 20px;
+        border: 1px solid #e0e6ed; background: #fff;
+        color: #64748b; font-size: 11.5px; font-weight: 600;
+        font-family: 'Poppins', sans-serif; cursor: pointer;
+        transition: all .2s; text-decoration: none;
+    }
+    .shortcut-btn:hover, .shortcut-btn.active {
+        background: #00ADB5; border-color: #00ADB5; color: #fff;
+    }
+
+    /* ── Tabs ────────────────────────────────────────── */
+    .report-tabs {
+        display: flex; gap: 0;
+        background: #fff; border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7;
+        overflow: hidden; margin-bottom: 20px;
+    }
+    .report-tab-btn {
+        flex: 1; padding: 14px 10px;
+        border: none; background: transparent;
+        font-size: 13px; font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+        color: #94a3b8; cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: color .2s, border-color .2s, background .2s;
+        display: flex; flex-direction: column;
+        align-items: center; gap: 5px;
+    }
+    .report-tab-btn i { font-size: 18px; }
+    .report-tab-btn:hover { color: #1a2433; background: #fafbfc; }
+    .report-tab-btn.active.inv  { color: #00ADB5; border-color: #00ADB5; }
+    .report-tab-btn.active.sales { color: #16a34a; border-color: #16a34a; }
+    .report-tab-btn.active.fin  { color: #2563eb; border-color: #2563eb; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Summary cards ───────────────────────────────── */
+    .stats-row {
+        display: grid; gap: 14px; margin-bottom: 20px;
+    }
+    .stats-row.cols-5 { grid-template-columns: repeat(5, 1fr); }
+    .stats-row.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    .stats-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .stat-card {
+        background: #fff; border-radius: 12px;
+        padding: 16px 18px; display: flex;
+        align-items: center; gap: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7;
+        animation: slideUp .4s ease both;
+    }
+    @keyframes slideUp {
+        from { opacity:0; transform:translateY(12px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    .stat-icon { width:44px; height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+    .stat-icon.teal   { background:rgba(0,173,181,.12);  color:#00ADB5; }
+    .stat-icon.green  { background:rgba(34,197,94,.12);   color:#16a34a; }
+    .stat-icon.orange { background:rgba(245,158,11,.12);  color:#d97706; }
+    .stat-icon.red    { background:rgba(239,68,68,.12);   color:#dc2626; }
+    .stat-icon.blue   { background:rgba(37,99,235,.12);   color:#2563eb; }
+    .stat-icon.purple { background:rgba(124,58,237,.12);  color:#7c3aed; }
+    .stat-info { display:flex; flex-direction:column; min-width:0; }
+    .stat-value { font-size:22px; font-weight:700; color:#1a2433; line-height:1; white-space:nowrap; }
+    .stat-label { font-size:11px; color:#78909c; margin-top:3px; font-weight:500; }
+
+    /* ── Section Card ────────────────────────────────── */
+    .section-card {
+        background: #fff; border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        border: 1px solid #eef2f7;
+        margin-bottom: 18px; overflow: hidden;
+        animation: slideUp .4s ease .1s both;
+    }
+    .section-header {
+        display: flex; align-items: center;
+        justify-content: space-between;
+        padding: 14px 20px;
+        border-bottom: 1px solid #f0f4f8;
+        flex-wrap: wrap; gap: 10px;
+    }
+    .section-title {
+        font-size: 13.5px; font-weight: 700; color: #1a2433;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .section-title i { color: #00ADB5; }
+
+    /* Export buttons */
+    .export-btns { display: flex; gap: 8px; }
+    .btn-export {
+        display: flex; align-items: center; gap: 6px;
+        padding: 7px 14px; border-radius: 8px;
+        border: 1px solid #e0e6ed; background: #fff;
+        font-size: 12px; font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer; text-decoration: none;
+        transition: all .2s; color: #64748b;
+    }
+    .btn-export:hover    { background: #f0f4f8; border-color: #cdd5df; }
+    .btn-export.excel    { color: #16a34a; border-color: rgba(34,197,94,.3); }
+    .btn-export.excel:hover { background: rgba(34,197,94,.08); }
+    .btn-export.pdf      { color: #dc2626; border-color: rgba(239,68,68,.3); }
+    .btn-export.pdf:hover { background: rgba(239,68,68,.08); }
+
+    /* ── Charts grid ─────────────────────────────────── */
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+    .chart-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.06); border: 1px solid #eef2f7; padding: 18px; }
+    .chart-title { font-size: 13px; font-weight: 700; color: #1a2433; margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+    .chart-title i { color: #00ADB5; font-size: 13px; }
+    .chart-wrap { position: relative; height: 240px; }
+
+    /* ── Table ───────────────────────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead th { background: #f8fafc; padding: 10px 14px; text-align: left; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: #78909c; border-bottom: 1px solid #eef2f7; white-space: nowrap; }
+    .data-table tbody tr { border-bottom: 1px solid #f4f7fb; transition: background .15s; }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: #f8fafc; }
+    .data-table td { padding: 10px 14px; font-size: 12.5px; color: #1a2433; vertical-align: middle; }
+    .scrollable-table { max-height: 380px; overflow-y: auto; }
+    .scrollable-table::-webkit-scrollbar { width: 4px; }
+    .scrollable-table::-webkit-scrollbar-thumb { background: #cfd8dc; border-radius: 10px; }
+
+    /* Status badges */
+    .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+    .badge.in-stock  { background:rgba(34,197,94,.1);  color:#16a34a; }
+    .badge.low-stock { background:rgba(245,158,11,.1); color:#d97706; }
+    .badge.out-stock { background:rgba(239,68,68,.1);  color:#dc2626; }
+    .badge.expired   { background:rgba(239,68,68,.1);  color:#dc2626; }
+    .badge.expiring  { background:rgba(245,158,11,.1); color:#d97706; }
+
+    /* Profit margin bar */
+    .margin-bar-wrap { display: flex; align-items: center; gap: 8px; }
+    .margin-bar { height: 6px; border-radius: 3px; background: #eef2f7; flex: 1; }
+    .margin-fill { height: 100%; border-radius: 3px; background: #16a34a; }
+    .margin-fill.neg { background: #dc2626; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 48px 20px; }
+    .empty-state i { font-size: 36px; margin-bottom: 10px; display: block; color: #d1d9e0; }
+    .empty-state p { font-size: 13px; color: #90a4ae; }
+
+    /* Toast */
+    .toast { position:fixed; bottom:26px; right:26px; background:#1a2433; color:#fff; padding:11px 16px; border-radius:10px; font-size:12.5px; font-weight:500; display:flex; align-items:center; gap:9px; box-shadow:0 8px 24px rgba(0,0,0,.2); z-index:9999; transform:translateY(70px); opacity:0; transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s; pointer-events:none; max-width:360px; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.success i { color:#4ade80; }
+    .toast.error   i { color:#f87171; }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ── Date range bar ──────────────────────────────────────── -->
+<form method="GET" action="" id="dateForm">
+    <input type="hidden" name="tab" value="{{ active_tab }}">
+    <div class="date-bar">
+        <span class="date-bar-label"><i class="fas fa-calendar-range" style="color:#00ADB5;margin-right:4px;"></i>Date Range:</span>
+        <input type="date" name="date_from" class="date-input" value="{{ date_from }}">
+        <span style="font-size:12px;color:#b0bec5;">to</span>
+        <input type="date" name="date_to"   class="date-input" value="{{ date_to }}">
+        <button type="submit" class="btn-apply"><i class="fas fa-filter" style="margin-right:5px;"></i>Apply</button>
+        <div class="date-shortcuts">
+            <a class="shortcut-btn" href="?tab={{ active_tab }}&date_from={{ today }}&date_to={{ today }}">Today</a>
+            <a class="shortcut-btn" href="?tab={{ active_tab }}&date_from={% now "Y-m-" %}01&date_to={{ today }}">This Month</a>
+            <a class="shortcut-btn" href="?tab={{ active_tab }}&date_from={{ today|date:"Y" }}-01-01&date_to={{ today }}">This Year</a>
+        </div>
+    </div>
+</form>
+
+<!-- ── Report Tabs ─────────────────────────────────────────── -->
+<div class="report-tabs">
+    <button class="report-tab-btn inv {% if active_tab == 'inventory' %}active{% endif %}"
+            onclick="switchTab('inventory')">
+        <i class="fas fa-boxes-stacked"></i> Inventory
+    </button>
+    <button class="report-tab-btn sales {% if active_tab == 'sales' %}active{% endif %}"
+            onclick="switchTab('sales')">
+        <i class="fas fa-chart-line"></i> Sales
+    </button>
+    <button class="report-tab-btn fin {% if active_tab == 'financial' %}active{% endif %}"
+            onclick="switchTab('financial')">
+        <i class="fas fa-money-bill"></i> Financial
+    </button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     INVENTORY TAB
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane {% if active_tab == 'inventory' %}active{% endif %}" id="tab-inventory">
+
+    <!-- Summary cards -->
+    <div class="stats-row cols-5">
+        <div class="stat-card">
+            <div class="stat-icon teal"><i class="fas fa-pills"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ total_medicines }}</span><span class="stat-label">Total Medicines</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-box-open"></i></div>
+            <div class="stat-info"><span class="stat-value">₱{{ stock_value|floatformat:2 }}</span><span class="stat-label">Stock Value</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-triangle-exclamation"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ low_stock_count }}</span><span class="stat-label">Low Stock</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-ban"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ out_of_stock_count }}</span><span class="stat-label">Out of Stock</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-calendar-xmark"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ expiring_soon_count }}</span><span class="stat-label">Expiring Soon</span></div>
+        </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="charts-row">
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i>Stock by Category</div>
+            <div class="chart-wrap"><canvas id="catChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-bar"></i>Stock Status Overview</div>
+            <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Current Stock -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-list"></i>Current Stock Report</div>
+            <div class="export-btns">
+                <a class="btn-export excel" href="{% url 'report_export_excel' %}?type=current_stock"><i class="fas fa-file-excel"></i> Excel</a>
+                <a class="btn-export pdf"   href="{% url 'report_export_pdf' %}?type=current_stock"><i class="fas fa-file-pdf"></i> PDF</a>
+            </div>
+        </div>
+        <div class="scrollable-table">
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Medicine</th><th>Generic</th><th>Category</th><th>Form</th><th>Strength</th><th>Supplier</th><th>Stock</th><th>Reorder</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for m in current_stock_qs %}
+                    <tr>
+                        <td style="color:#b0bec5;font-size:11.5px;">{{ forloop.counter }}</td>
+                        <td style="font-weight:600;">{{ m.medicine_name }}</td>
+                        <td style="color:#64748b;">{{ m.generic_name }}</td>
+                        <td style="color:#64748b;">{{ m.category.name|default:"—" }}</td>
+                        <td style="color:#64748b;">{{ m.get_dosage_form_display }}</td>
+                        <td>{{ m.strength }}</td>
+                        <td style="color:#64748b;font-size:12px;">{{ m.supplier.name|default:"—" }}</td>
+                        <td style="font-weight:700;color:{% if m.is_out_of_stock %}#dc2626{% elif m.is_low_stock %}#d97706{% else %}#16a34a{% endif %};">{{ m.stock_quantity }}</td>
+                        <td style="color:#64748b;">{{ m.reorder_level }}</td>
+                        <td>
+                            {% if m.is_out_of_stock %}<span class="badge out-stock"><i class="fas fa-circle" style="font-size:6px;"></i>Out of Stock</span>
+                            {% elif m.is_low_stock %}<span class="badge low-stock"><i class="fas fa-circle" style="font-size:6px;"></i>Low Stock</span>
+                            {% else %}<span class="badge in-stock"><i class="fas fa-circle" style="font-size:6px;"></i>In Stock</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="10"><div class="empty-state"><i class="fas fa-pills"></i><p>No medicines found.</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Low Stock -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-triangle-exclamation" style="color:#d97706;"></i>Low Stock Report</div>
+            <div class="export-btns">
+                <a class="btn-export excel" href="{% url 'report_export_excel' %}?type=low_stock"><i class="fas fa-file-excel"></i> Excel</a>
+                <a class="btn-export pdf"   href="{% url 'report_export_pdf' %}?type=low_stock"><i class="fas fa-file-pdf"></i> PDF</a>
+            </div>
+        </div>
+        <div class="scrollable-table">
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Medicine</th><th>Category</th><th>Strength</th><th>Stock</th><th>Reorder Level</th><th>Deficit</th><th>Supplier</th></tr></thead>
+                <tbody>
+                    {% for m in low_stock_qs %}
+                    <tr>
+                        <td style="color:#b0bec5;font-size:11.5px;">{{ forloop.counter }}</td>
+                        <td style="font-weight:600;">{{ m.medicine_name }}</td>
+                        <td style="color:#64748b;">{{ m.category.name|default:"—" }}</td>
+                        <td>{{ m.strength }}</td>
+                        <td style="font-weight:700;color:{% if m.stock_quantity == 0 %}#dc2626{% else %}#d97706{% endif %};">{{ m.stock_quantity }}</td>
+                        <td style="color:#64748b;">{{ m.reorder_level }}</td>
+                        <td style="font-weight:700;color:#dc2626;">{{ m.reorder_level|add:"-"|add:m.stock_quantity }}</td>
+                        <td style="color:#64748b;font-size:12px;">{{ m.supplier.name|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8"><div class="empty-state"><i class="fas fa-check-circle" style="color:#4ade80;"></i><p>All medicines are sufficiently stocked.</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Expiring Soon -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-clock" style="color:#d97706;"></i>Expiring Soon (within 90 days)</div>
+            <div class="export-btns">
+                <a class="btn-export excel" href="{% url 'report_export_excel' %}?type=expiring"><i class="fas fa-file-excel"></i> Excel</a>
+                <a class="btn-export pdf"   href="{% url 'report_export_pdf' %}?type=expiring"><i class="fas fa-file-pdf"></i> PDF</a>
+            </div>
+        </div>
+        <div class="scrollable-table">
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Medicine</th><th>Category</th><th>Strength</th><th>Batch No.</th><th>Expiry Date</th><th>Days Left</th><th>Stock</th><th>Supplier</th></tr></thead>
+                <tbody>
+                    {% for m in expiring_qs %}
+                    <tr>
+                        <td style="color:#b0bec5;font-size:11.5px;">{{ forloop.counter }}</td>
+                        <td style="font-weight:600;">{{ m.medicine_name }}</td>
+                        <td style="color:#64748b;">{{ m.category.name|default:"—" }}</td>
+                        <td>{{ m.strength }}</td>
+                        <td style="color:#64748b;font-family:monospace;font-size:12px;">{{ m.batch_number|default:"—" }}</td>
+                        <td style="font-weight:600;color:#d97706;">{{ m.expiry_date|date:"M d, Y"|default:"—" }}</td>
+                        <td>
+                            {% if m.expiry_date %}
+                                {% with days=m.expiry_date|timeuntil:today %}
+                                <span style="font-weight:700;color:{% if m.expiry_date|date:'U'|add:'0' < today|date:'U'|add:'2592000' %}#dc2626{% else %}#d97706{% endif %};">
+                                    {{ m.expiry_date|timeuntil }}
+                                </span>
+                                {% endwith %}
+                            {% else %}—{% endif %}
+                        </td>
+                        <td style="font-weight:600;">{{ m.stock_quantity }}</td>
+                        <td style="color:#64748b;font-size:12px;">{{ m.supplier.name|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9"><div class="empty-state"><i class="fas fa-check-circle" style="color:#4ade80;"></i><p>No medicines expiring within 90 days.</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Expired -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-calendar-xmark" style="color:#dc2626;"></i>Expired Medicines</div>
+            <div class="export-btns">
+                <a class="btn-export excel" href="{% url 'report_export_excel' %}?type=expired"><i class="fas fa-file-excel"></i> Excel</a>
+                <a class="btn-export pdf"   href="{% url 'report_export_pdf' %}?type=expired"><i class="fas fa-file-pdf"></i> PDF</a>
+            </div>
+        </div>
+        <div class="scrollable-table">
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Medicine</th><th>Category</th><th>Strength</th><th>Batch No.</th><th>Expired On</th><th>Stock Remaining</th><th>Supplier</th></tr></thead>
+                <tbody>
+                    {% for m in expired_qs %}
+                    <tr>
+                        <td style="color:#b0bec5;font-size:11.5px;">{{ forloop.counter }}</td>
+                        <td style="font-weight:600;">{{ m.medicine_name }}</td>
+                        <td style="color:#64748b;">{{ m.category.name|default:"—" }}</td>
+                        <td>{{ m.strength }}</td>
+                        <td style="color:#64748b;font-family:monospace;font-size:12px;">{{ m.batch_number|default:"—" }}</td>
+                        <td style="font-weight:700;color:#dc2626;">{{ m.expiry_date|date:"M d, Y"|default:"—" }}</td>
+                        <td style="font-weight:700;color:#dc2626;">{{ m.stock_quantity }}</td>
+                        <td style="color:#64748b;font-size:12px;">{{ m.supplier.name|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8"><div class="empty-state"><i class="fas fa-check-circle" style="color:#4ade80;"></i><p>No expired medicines on record.</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SALES TAB
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane {% if active_tab == 'sales' %}active{% endif %}" id="tab-sales">
+
+    <!-- Summary cards -->
+    <div class="stats-row cols-4">
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-peso-sign"></i></div>
+            <div class="stat-info"><span class="stat-value">₱{{ total_revenue|floatformat:2 }}</span><span class="stat-label">Total Revenue</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon teal"><i class="fas fa-box-open"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ total_units_sold|floatformat:0 }}</span><span class="stat-label">Units Dispensed</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-receipt"></i></div>
+            <div class="stat-info"><span class="stat-value">{{ total_transactions }}</span><span class="stat-label">Transactions</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-chart-line"></i></div>
+            <div class="stat-info">
+                <span class="stat-value">
+                    {% if total_transactions %}
+                        ₱{% widthratio total_revenue total_transactions 1 %}
+                    {% else %}₱0{% endif %}
+                </span>
+                <span class="stat-label">Avg per Transaction</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-line"></i>Daily Dispensing Trend</div>
+            <div class="chart-wrap"><canvas id="salesTrendChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-bar"></i>Top 10 Medicines by Units</div>
+            <div class="chart-wrap"><canvas id="topMedChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Top medicines table -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-trophy" style="color:#d97706;"></i>Top Selling Medicines</div>
+            <div class="export-btns">
+                <a class="btn-export excel" href="{% url 'report_export_excel' %}?type=sales&date_from={{ date_from }}&date_to={{ date_to }}"><i class="fas fa-file-excel"></i> Excel</a>
+                <a class="btn-export pdf"   href="{% url 'report_export_pdf' %}?type=sales&date_from={{ date_from }}&date_to={{ date_to }}"><i class="fas fa-file-pdf"></i> PDF</a>
+            </div>
+        </div>
+        <table class="data-table">
+            <thead><tr><th>Rank</th><th>Medicine</th><th>Strength</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+            <tbody>
+                {% for m in top_medicines %}
+                <tr>
+                    <td>
+                        {% if forloop.counter <= 3 %}
+                            <span style="font-size:18px;">{% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% else %}🥉{% endif %}</span>
+                        {% else %}
+                            <span style="color:#b0bec5;font-weight:700;">#{{ forloop.counter }}</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-weight:600;">{{ m.medicine__medicine_name }}</td>
+                    <td style="color:#64748b;">{{ m.medicine__strength }}</td>
+                    <td style="font-weight:700;color:#2563eb;">{{ m.units|floatformat:0 }}</td>
+                    <td style="font-weight:700;color:#16a34a;">₱{{ m.revenue|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5"><div class="empty-state"><i class="fas fa-chart-line"></i><p>No sales data for the selected period.</p></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sales detail table -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-table-list"></i>Sales Detail — {{ date_from }} to {{ date_to }}</div>
+        </div>
+        <div class="scrollable-table">
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Date & Time</th><th>Medicine</th><th>Strength</th><th>Qty</th><th>Revenue</th><th>Dispensed To</th><th>Rx No.</th><th>By</th></tr></thead>
+                <tbody>
+                    {% for s in sales_detail %}
+                    <tr>
+                        <td style="color:#b0bec5;font-size:11.5px;">{{ forloop.counter }}</td>
+                        <td style="font-size:12px;white-space:nowrap;">
+                            <div style="font-weight:600;">{{ s.created_at|date:"M d, Y" }}</div>
+                            <div style="color:#94a3b8;">{{ s.created_at|date:"h:i A" }}</div>
+                        </td>
+                        <td style="font-weight:600;">{{ s.medicine__medicine_name }}</td>
+                        <td style="color:#64748b;">{{ s.medicine__strength }}</td>
+                        <td style="font-weight:700;color:#2563eb;">{{ s.quantity|cut:"-" }}</td>
+                        <td style="font-weight:700;color:#16a34a;">₱{{ s.rev|floatformat:2 }}</td>
+                        <td style="color:#64748b;font-size:12px;">{{ s.dispensed_to|default:"—" }}</td>
+                        <td style="color:#64748b;font-size:12px;font-family:monospace;">{{ s.prescription_no|default:"—" }}</td>
+                        <td style="font-size:12px;">
+                            {% if s.performed_by__first_name %}
+                                {{ s.performed_by__first_name }} {{ s.performed_by__last_name }}
+                            {% else %}{{ s.performed_by__username|default:"—" }}{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9"><div class="empty-state"><i class="fas fa-receipt"></i><p>No sales records for the selected period.</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     FINANCIAL TAB
+══════════════════════════════════════════════════════════ -->
+<div class="tab-pane {% if active_tab == 'financial' %}active{% endif %}" id="tab-financial">
+
+    <!-- Summary cards -->
+    <div class="stats-row cols-4">
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-peso-sign"></i></div>
+            <div class="stat-info"><span class="stat-value">₱{{ total_revenue|floatformat:2 }}</span><span class="stat-label">Total Revenue</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon red"><i class="fas fa-arrow-trend-down"></i></div>
+            <div class="stat-info"><span class="stat-value">₱{{ total_cogs|floatformat:2 }}</span><span class="stat-label">Cost of Goods (COGS)</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon {% if gross_profit >= 0 %}green{% else %}red{% endif %}"><i class="fas fa-chart-pie"></i></div>
+            <div class="stat-info">
+                <span class="stat-value" style="color:{% if gross_profit >= 0 %}#16a34a{% else %}#dc2626{% endif %};">₱{{ gross_profit|floatformat:2 }}</span>
+                <span class="stat-label">Gross Profit</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon {% if profit_margin >= 0 %}blue{% else %}red{% endif %}"><i class="fas fa-percent"></i></div>
+            <div class="stat-info">
+                <span class="stat-value" style="color:{% if profit_margin >= 0 %}#2563eb{% else %}#dc2626{% endif %};">{{ profit_margin }}%</span>
+                <span class="stat-label">Profit Margin</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-area"></i>Monthly Revenue vs Cost</div>
+            <div class="chart-wrap"><canvas id="revCostChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-bar"></i>Top 10 by Gross Profit</div>
+            <div class="chart-wrap"><canvas id="profitChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Profit by medicine -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title"><i class="fas fa-table-list"></i>Profit by Medicine — {{ date_from }} to {{ date_to }}</div>
+            <div class="export-btns">
+                <a class="btn-export excel" href="{% url 'report_export_excel' %}?type=financial&date_from={{ date_from }}&date_to={{ date_to }}"><i class="fas fa-file-excel"></i> Excel</a>
+                <a class="btn-export pdf"   href="{% url 'report_export_pdf' %}?type=financial&date_from={{ date_from }}&date_to={{ date_to }}"><i class="fas fa-file-pdf"></i> PDF</a>
+            </div>
+        </div>
+        <div class="scrollable-table">
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Medicine</th><th>Strength</th><th>Units Sold</th><th>Revenue</th><th>COGS</th><th>Gross Profit</th><th>Margin</th></tr></thead>
+                <tbody>
+                    {% for row in profit_by_medicine %}
+                    <tr>
+                        <td style="color:#b0bec5;font-size:11.5px;">{{ forloop.counter }}</td>
+                        <td style="font-weight:600;">{{ row.medicine__medicine_name }}</td>
+                        <td style="color:#64748b;">{{ row.medicine__strength }}</td>
+                        <td style="font-weight:600;color:#2563eb;">{{ row.units_sold|floatformat:0 }}</td>
+                        <td style="font-weight:600;color:#16a34a;">₱{{ row.revenue|floatformat:2 }}</td>
+                        <td style="color:#64748b;">₱{{ row.cogs|floatformat:2 }}</td>
+                        <td style="font-weight:700;color:{% if row.gross_profit >= 0 %}#16a34a{% else %}#dc2626{% endif %};">
+                            ₱{{ row.gross_profit|floatformat:2 }}
+                        </td>
+                        <td>
+                            <div class="margin-bar-wrap">
+                                <div class="margin-bar">
+                                    <div class="margin-fill {% if row.margin_pct < 0 %}neg{% endif %}"
+                                         style="width:{{ row.margin_pct|floatformat:0 }}%"></div>
+                                </div>
+                                <span style="font-size:11.5px;font-weight:700;color:{% if row.margin_pct >= 0 %}#16a34a{% else %}#dc2626{% endif %};white-space:nowrap;">
+                                    {{ row.margin_pct|floatformat:1 }}%
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="8"><div class="empty-state"><i class="fas fa-sack-dollar"></i><p>No financial data for the selected period.</p></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-circle-check"></i><span id="toastMsg"></span></div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(tab) {
+    document.querySelectorAll('.report-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelector(`.${tab === 'inventory' ? 'inv' : tab === 'sales' ? 'sales' : 'fin'}`).classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    document.querySelector('input[name="tab"]').value = tab;
+}
+
+// ── Chart defaults ────────────────────────────────────────────
+Chart.defaults.font.family = "'Poppins', sans-serif";
+Chart.defaults.font.size   = 11;
+Chart.defaults.color       = '#78909c';
+
+const TEAL   = '#00ADB5';
+const GREEN  = '#16a34a';
+const RED    = '#dc2626';
+const ORANGE = '#d97706';
+const BLUE   = '#2563eb';
+const PURPLE = '#7c3aed';
+
+function makeGradient(ctx, color) {
+    const grad = ctx.createLinearGradient(0, 0, 0, 240);
+    grad.addColorStop(0,   color + '55');
+    grad.addColorStop(1,   color + '05');
+    return grad;
+}
+
+// ── INVENTORY CHARTS ──────────────────────────────────────────
+
+// Stock by category (doughnut)
+const catLabels = {{ cat_labels|safe }};
+const catValues = {{ cat_values|safe }};
+
+if(catLabels.length) {
+    const catCtx = document.getElementById('catChart').getContext('2d');
+    new Chart(catCtx, {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catValues,
+                backgroundColor: [
+                    '#00ADB5','#16a34a','#2563eb','#d97706','#7c3aed',
+                    '#dc2626','#0891b2','#65a30d','#f59e0b','#e11d48'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff',
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { boxWidth: 12, padding: 14 } }
+            }
+        }
+    });
+}
+
+// Stock status (bar)
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+new Chart(statusCtx, {
+    type: 'bar',
+    data: {
+        labels: ['In Stock', 'Low Stock', 'Out of Stock', 'Expiring Soon', 'Expired'],
+        datasets: [{
+            data: [
+                {{ total_medicines }} - {{ low_stock_count }} - {{ out_of_stock_count }},
+                {{ low_stock_count }},
+                {{ out_of_stock_count }},
+                {{ expiring_soon_count }},
+                {{ expired_count }},
+            ],
+            backgroundColor: [GREEN, ORANGE, RED, ORANGE, RED],
+            borderRadius: 6,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, grid: { color: '#f0f4f8' },
+                 ticks: { precision: 0 } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
+// ── SALES CHARTS ──────────────────────────────────────────────
+
+const salesLabels = {{ sales_labels|safe }};
+const salesUnits  = {{ sales_units|safe }};
+
+if(salesLabels.length) {
+    const trendCtx = document.getElementById('salesTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: salesLabels,
+            datasets: [{
+                label: 'Units Dispensed',
+                data: salesUnits,
+                borderColor: GREEN,
+                backgroundColor: makeGradient(trendCtx, GREEN),
+                borderWidth: 2.5,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: GREEN,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f0f4f8' }, ticks: { precision: 0 } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+const topMedLabels   = {{ top_med_labels|safe }};
+const topMedUnits    = {{ top_med_units|safe }};
+
+if(topMedLabels.length) {
+    const topCtx = document.getElementById('topMedChart').getContext('2d');
+    new Chart(topCtx, {
+        type: 'bar',
+        data: {
+            labels: topMedLabels,
+            datasets: [{
+                label: 'Units',
+                data: topMedUnits,
+                backgroundColor: TEAL + 'CC',
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, grid: { color: '#f0f4f8' }, ticks: { precision: 0 } },
+                y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+// ── FINANCIAL CHARTS ──────────────────────────────────────────
+
+const revLabels  = {{ monthly_rev_labels|safe }};
+const revValues  = {{ monthly_rev_values|safe }};
+const costLabels = {{ monthly_cost_labels|safe }};
+const costValues = {{ monthly_cost_values|safe }};
+
+// Merge labels
+const allMonths = [...new Set([...revLabels, ...costLabels])].sort();
+
+if(allMonths.length) {
+    const rcCtx = document.getElementById('revCostChart').getContext('2d');
+    new Chart(rcCtx, {
+        type: 'bar',
+        data: {
+            labels: allMonths.map(d => {
+                const dt = new Date(d);
+                return dt.toLocaleDateString('en-US', {month:'short', year:'2-digit'});
+            }),
+            datasets: [
+                {
+                    label: 'Revenue',
+                    data: allMonths.map(m => {
+                        const idx = revLabels.indexOf(m);
+                        return idx >= 0 ? revValues[idx] : 0;
+                    }),
+                    backgroundColor: GREEN + 'CC',
+                    borderRadius: 5,
+                },
+                {
+                    label: 'Cost',
+                    data: allMonths.map(m => {
+                        const idx = costLabels.indexOf(m);
+                        return idx >= 0 ? costValues[idx] : 0;
+                    }),
+                    backgroundColor: RED + 'AA',
+                    borderRadius: 5,
+                }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { boxWidth: 12, padding: 12 } }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f0f4f8' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+// Profit by medicine chart
+const profitMedLabels  = [{% for row in profit_by_medicine %}"{{ row.medicine__medicine_name|truncatechars:18|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+const profitMedValues  = [{% for row in profit_by_medicine %}{{ row.gross_profit|floatformat:2 }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+if(profitMedLabels.length) {
+    const profCtx = document.getElementById('profitChart').getContext('2d');
+    new Chart(profCtx, {
+        type: 'bar',
+        data: {
+            labels: profitMedLabels,
+            datasets: [{
+                label: 'Gross Profit (₱)',
+                data: profitMedValues,
+                backgroundColor: profitMedValues.map(v => v >= 0 ? GREEN + 'CC' : RED + 'AA'),
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: '#f0f4f8' } },
+                y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+            }
+        }
+    });
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type='success') {
+    const toast = document.getElementById('toast');
+    toast.querySelector('i').className = type==='success' ? 'fas fa-circle-check' : 'fas fa-circle-xmark';
+    document.getElementById('toastMsg').textContent = msg;
+    toast.className = `toast ${type}`;
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 3200);
+}
+{% if messages %}{% for message in messages %}
+    showToast("{{ message|escapejs }}","{% if 'error' in message.tags %}error{% else %}success{% endif %}");
+{% endfor %}{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+<div class="med-picker">
+    <label class="med-picker-label">Medicine <span style="color:#dc2626">*</span></label>
+
+    <div class="med-picker-input-wrap">
+        <input type="text"
+               id="{{ tab }}_search_input"
+               class="med-picker-search"
+               placeholder="Search by name, generic, barcode…"
+               autocomplete="off">
+        <button type="button"
+                class="med-picker-scan-btn"
+                title="Scan barcode"
+                onclick="openFormScanner('{{ tab }}')">
+            <i class="fas fa-barcode"></i>
+        </button>
+    </div>
+
+    <!-- Scan bar (inline, shows below input when scan button clicked) -->
+    <div class="form-scanner-bar" id="{{ tab }}_scan_bar">
+        <i class="fas fa-barcode"></i>
+        <input type="text"
+               id="{{ tab }}_scan_input"
+               placeholder="Type or scan barcode, press Enter"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();submitFormScan('{{ tab }}');}">
+        <button type="button" class="form-scanner-close" onclick="closeFormScanner('{{ tab }}')">
+            <i class="fas fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Results dropdown -->
+    <div class="med-picker-dropdown" id="{{ tab }}_picker_dropdown"></div>
+</div>
