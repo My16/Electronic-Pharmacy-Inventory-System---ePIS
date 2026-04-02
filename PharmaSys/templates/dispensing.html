@@ -88,9 +88,22 @@
     .cart-item-name { font-size:12.5px; font-weight:600; color:#1a2433; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .cart-item-price { font-size:11px; color:#94a3b8; margin-top:1px; }
     .cart-qty-ctrl { display:flex; align-items:center; gap:5px; flex-shrink:0; }
-    .qty-btn { width:24px; height:24px; border-radius:6px; border:1px solid #e0e6ed; background:#f8fafc; color:#64748b; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; font-weight:700; }
+    .qty-btn { width:24px; height:24px; border-radius:6px; border:1px solid #e0e6ed; background:#f8fafc; color:#64748b; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; font-weight:700; line-height:1; }
     .qty-btn:hover { background:#e0e6ed; color:#1a2433; }
-    .qty-val { font-size:13px; font-weight:700; color:#1a2433; min-width:26px; text-align:center; }
+
+    /* Typeable qty input */
+    .qty-input {
+        width: 52px; text-align: center;
+        border: 1px solid #e0e6ed; border-radius: 6px;
+        padding: 3px 4px; font-size: 13px; font-weight: 700;
+        font-family: 'Poppins', sans-serif; color: #1a2433;
+        background: #f8fafc; outline: none;
+        -moz-appearance: textfield;
+    }
+    .qty-input:focus { border-color: #00ADB5; background: #fff; box-shadow: 0 0 0 2px rgba(0,173,181,.1); }
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
     .cart-item-subtotal { font-size:12.5px; font-weight:700; color:#1a2433; min-width:55px; text-align:right; flex-shrink:0; }
     .btn-remove-item { background:none; border:none; color:#dc2626; cursor:pointer; padding:3px; opacity:.5; transition:opacity .15s; }
     .btn-remove-item:hover { opacity:1; }
@@ -108,7 +121,7 @@
     .discount-row input:focus { border-color:#00ADB5; }
     .discount-row select { border:1px solid #e0e6ed; border-radius:7px; padding:6px 10px; font-size:12.5px; font-family:'Poppins',sans-serif; color:#1a2433; outline:none; background:#fff; cursor:pointer; }
 
-    /* Cart footer buttons */
+    /* Cart footer */
     .cart-footer { padding:14px 20px; border-top:1px solid #f0f4f8; display:flex; flex-direction:column; gap:8px; }
     .btn-dispense { width:100%; padding:11px; border:none; border-radius:10px; background:#00ADB5; color:#fff; font-size:14px; font-weight:700; font-family:'Poppins',sans-serif; cursor:pointer; transition:background .2s; box-shadow:0 2px 10px rgba(0,173,181,.3); display:flex; align-items:center; justify-content:center; gap:8px; }
     .btn-dispense:hover { background:#008C9E; }
@@ -133,8 +146,8 @@
     .user-chip-avatar { width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg,#00ADB5,#008C9E); display:flex; align-items:center; justify-content:center; color:#fff; font-size:9px; font-weight:700; }
 
     .btn-icon { width:30px; height:30px; border-radius:7px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; transition:background .15s; }
-    .btn-icon.view { background:rgba(59,130,246,.1); color:#2563eb; }
-    .btn-icon.view:hover { background:rgba(59,130,246,.2); }
+    .btn-icon.view  { background:rgba(59,130,246,.1); color:#2563eb; }
+    .btn-icon.view:hover  { background:rgba(59,130,246,.2); }
     .btn-icon.print { background:rgba(0,173,181,.1); color:#00ADB5; }
     .btn-icon.print:hover { background:rgba(0,173,181,.2); }
 
@@ -176,7 +189,6 @@
     .modal-close { width:30px; height:30px; border-radius:8px; border:none; background:#f0f4f8; color:#78909c; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; }
     .modal-close:hover { background:#e0e6ed; color:#1a2433; }
 
-    /* Receipt */
     .receipt-modal { background:#fff; border-radius:16px; width:100%; max-width:420px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.2); animation:modalIn .25s cubic-bezier(.34,1.56,.64,1) both; overflow:hidden; }
     .receipt-modal-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f4f8; }
     .receipt-modal-title { font-size:14px; font-weight:700; color:#1a2433; display:flex; align-items:center; gap:8px; }
@@ -189,12 +201,7 @@
     .btn-new-txn:hover { background:#f0f4f8; }
 
     /* Receipt paper */
-    #receiptContent {
-        font-family: 'Courier New', monospace;
-        font-size: 12px; color: #1a2433;
-        padding: 20px 24px;
-        background: #fff;
-    }
+    #receiptContent { font-family:'Courier New',monospace; font-size:12px; color:#1a2433; padding:20px 24px; background:#fff; }
     .receipt-header-block { text-align:center; margin-bottom:14px; }
     .receipt-hosp { font-size:13px; font-weight:700; margin-bottom:2px; }
     .receipt-sub { font-size:10.5px; color:#64748b; }
@@ -275,7 +282,6 @@
                 </button>
             </div>
             <div class="med-grid" id="medGrid">
-                <!-- populated by JS -->
                 <div class="med-grid-empty">
                     <i class="fas fa-search"></i>
                     <p>Search for a medicine or scan a barcode to begin.</p>
@@ -344,7 +350,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="7"><div class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet today.</p></div></td></tr>
+                    <tr><td colspan="7"><div class="empty-state"><i class="fas fa-receipt"></i><p>No transactions yet.</p></div></td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -402,7 +408,7 @@
 
         <!-- Cart items -->
         <div class="cart-items" id="cartItems">
-            <div class="cart-empty" id="cartEmpty">
+            <div class="cart-empty">
                 <i class="fas fa-cart-shopping"></i>
                 <p>Cart is empty.<br>Search and add medicines.</p>
             </div>
@@ -483,22 +489,19 @@
 {% block extra_js %}
 <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
-const MEDICINE_SEARCH_URL  = "{% url 'medicine_search_ajax' %}";
-const DISPENSE_URL         = "{% url 'dispensing_create' %}";
-const RECEIPT_URL          = "{% url 'dispensing_receipt' pk=0 %}".replace('/0/', '/');
-const CSRF_TOKEN           = '{{ csrf_token }}';
+const MEDICINE_SEARCH_URL = "{% url 'medicine_search_ajax' %}";
+const DISPENSE_URL        = "{% url 'dispensing_create' %}";
+const RECEIPT_URL         = "{% url 'dispensing_receipt' pk=0 %}".replace('/0/', '/');
+const CSRF_TOKEN          = '{{ csrf_token }}';
 
 // ── Cart State ────────────────────────────────────────────────
-let cart = [];   // [{pk, name, strength, dosage, price, qty, stock}]
+let cart = [];  // [{pk, name, strength, dosage, price, qty, stock}]
 
 // ── Medicine Search ───────────────────────────────────────────
 let searchTimer;
 function debounceSearch(q) {
     clearTimeout(searchTimer);
-    if(!q.trim()) {
-        renderInitialGrid();
-        return;
-    }
+    if(!q.trim()) { renderInitialGrid(); return; }
     searchTimer = setTimeout(() => fetchMedicines(q), 300);
 }
 
@@ -567,17 +570,68 @@ function addToCart(pk, name, strength, dosage, price, stock) {
     showToast(`${name} added to cart.`, 'success');
 }
 
+// +/− buttons: update without full re-render
 function changeQty(pk, delta) {
     const item = cart.find(i => i.pk === pk);
     if(!item) return;
-    item.qty += delta;
-    if(item.qty <= 0) {
+    const newQty = item.qty + delta;
+    if(newQty <= 0) {
         cart = cart.filter(i => i.pk !== pk);
-    } else if(item.qty > item.stock) {
-        item.qty = item.stock;
-        showToast(`Only ${item.stock} units available.`, 'error');
+        renderCart();
+        return;
     }
-    renderCart();
+    if(newQty > item.stock) {
+        showToast(`Only ${item.stock} units available.`, 'error');
+        return;
+    }
+    item.qty = newQty;
+    // sync input without full re-render
+    const input = document.querySelector(`.qty-input[data-pk="${pk}"]`);
+    if(input) input.value = item.qty;
+    updateCartItemSubtotal(pk);
+    updateCartTotalsAndCount();
+}
+
+// Direct typing in the input
+function setQty(pk, input) {
+    const item = cart.find(i => i.pk === pk);
+    if(!item) return;
+    const val = parseInt(input.value);
+    if(isNaN(val) || val < 1) return; // wait for blur to fix
+    if(val > item.stock) {
+        showToast(`Only ${item.stock} units available.`, 'error');
+        input.value = item.stock;
+        item.qty    = item.stock;
+    } else {
+        item.qty = val;
+    }
+    updateCartItemSubtotal(pk);
+    updateCartTotalsAndCount();
+}
+
+// On blur: ensure value is never blank or 0
+function validateQty(pk, input) {
+    const item = cart.find(i => i.pk === pk);
+    if(!item) return;
+    const val = parseInt(input.value);
+    if(isNaN(val) || val < 1) {
+        input.value = 1;
+        item.qty    = 1;
+        updateCartItemSubtotal(pk);
+        updateCartTotalsAndCount();
+    }
+}
+
+function updateCartItemSubtotal(pk) {
+    const item      = cart.find(i => i.pk === pk);
+    if(!item) return;
+    const el = document.querySelector(`.cart-item[data-pk="${pk}"] .cart-item-subtotal`);
+    if(el) el.textContent = `₱${(item.price * item.qty).toFixed(2)}`;
+}
+
+function updateCartTotalsAndCount() {
+    document.getElementById('cartCount').textContent = cart.reduce((s, i) => s + i.qty, 0);
+    recalcTotals();
 }
 
 function removeItem(pk) {
@@ -587,36 +641,43 @@ function removeItem(pk) {
 
 function clearCart() {
     cart = [];
-    document.getElementById('customerName').value = '';
+    document.getElementById('customerName').value   = '';
     document.getElementById('prescriptionNo').value = '';
-    document.getElementById('customerNotes').value = '';
-    document.getElementById('discountVal').value = '';
+    document.getElementById('customerNotes').value  = '';
+    document.getElementById('discountVal').value    = '';
     renderCart();
 }
 
 function renderCart() {
     const container = document.getElementById('cartItems');
-    const emptyEl   = document.getElementById('cartEmpty');
     document.getElementById('cartCount').textContent = cart.reduce((s, i) => s + i.qty, 0);
 
     if(!cart.length) {
-        container.innerHTML = `<div class="cart-empty" id="cartEmpty">
+        container.innerHTML = `<div class="cart-empty">
             <i class="fas fa-cart-shopping"></i>
-            <p>Cart is empty.<br>Search and add medicines.</p></div>`;
+            <p>Cart is empty.<br>Search and add medicines.</p>
+        </div>`;
         document.getElementById('btnDispense').disabled = true;
         recalcTotals();
         return;
     }
 
     container.innerHTML = cart.map(item => `
-        <div class="cart-item">
+        <div class="cart-item" data-pk="${item.pk}">
             <div class="cart-item-info">
                 <div class="cart-item-name">${escHtml(item.name)} ${escHtml(item.strength)}</div>
                 <div class="cart-item-price">₱${item.price.toFixed(2)} / unit · ${escHtml(item.dosage)}</div>
             </div>
             <div class="cart-qty-ctrl">
                 <button class="qty-btn" onclick="changeQty(${item.pk}, -1)">−</button>
-                <span class="qty-val">${item.qty}</span>
+                <input class="qty-input"
+                       type="number"
+                       data-pk="${item.pk}"
+                       min="1"
+                       max="${item.stock}"
+                       value="${item.qty}"
+                       oninput="setQty(${item.pk}, this)"
+                       onblur="validateQty(${item.pk}, this)">
                 <button class="qty-btn" onclick="changeQty(${item.pk}, 1)">+</button>
             </div>
             <div class="cart-item-subtotal">₱${(item.price * item.qty).toFixed(2)}</div>
@@ -689,9 +750,7 @@ function submitDispensing() {
     });
 }
 
-// ── Receipt Rendering ─────────────────────────────────────────
-let currentReceiptHtml = '';
-
+// ── Receipt ───────────────────────────────────────────────────
 function renderReceipt(r) {
     const html = `
     <div id="receiptContent">
@@ -729,7 +788,6 @@ function renderReceipt(r) {
         </div>
     </div>`;
     document.getElementById('receiptContent').outerHTML = html;
-    currentReceiptHtml = html;
 }
 
 function viewReceipt(pk) {
@@ -780,6 +838,7 @@ function closeScanner() {
     stopCamera();
     document.getElementById('scannerOverlay').classList.remove('open');
     document.getElementById('scannerStatus').textContent = 'Point camera at a barcode…';
+    document.getElementById('scannerStatus').className   = 'scanner-status';
     document.getElementById('manualBarcode').value = '';
 }
 function startCamera() {
@@ -790,12 +849,12 @@ function startCamera() {
     codeReader = new ZXing.BrowserMultiFormatReader();
     codeReader.listVideoInputDevices().then(devices => {
         if(!devices.length) throw new Error('No camera found.');
-        const id = devices[devices.length-1].deviceId;
+        const id = devices[devices.length - 1].deviceId;
         return codeReader.decodeFromVideoDevice(id, document.getElementById('scannerVideo'),
             result => { if(result) handleBarcodeScan(result.getText()); });
     }).catch(err => {
         document.getElementById('scannerStatus').textContent = 'Camera: ' + err.message;
-        document.getElementById('scannerStatus').className = 'scanner-status error';
+        document.getElementById('scannerStatus').className   = 'scanner-status error';
     });
 }
 function stopCamera() { if(codeReader) { codeReader.reset(); codeReader = null; } }
@@ -814,17 +873,16 @@ function handleBarcodeScan(barcode) {
                 } else {
                     addToCart(m.pk, m.medicine_name, m.strength, m.dosage_form,
                               m.selling_price, m.stock_quantity);
-                    // Also show in grid
                     document.getElementById('medSearch').value = m.medicine_name;
                     renderMedGrid(data.results);
                 }
             } else {
                 document.getElementById('scannerStatus').textContent = `"${barcode}" not found.`;
-                document.getElementById('scannerStatus').className = 'scanner-status error';
+                document.getElementById('scannerStatus').className   = 'scanner-status error';
             }
         }).catch(() => {
             document.getElementById('scannerStatus').textContent = 'Lookup failed.';
-            document.getElementById('scannerStatus').className = 'scanner-status error';
+            document.getElementById('scannerStatus').className   = 'scanner-status error';
         });
 }
 function lookupBarcode() {
