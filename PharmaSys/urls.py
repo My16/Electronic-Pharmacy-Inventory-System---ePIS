@@ -19,12 +19,10 @@ urlpatterns = [
     path('inventory/barcode/',               views.inventory_barcode_lookup,name='inventory_barcode'),
     path('inventory/stock-adjust/<int:pk>/', views.inventory_stock_adjust,  name='inventory_stock_adjust'),
 
-    # ── Category Management (AJAX) ─────────────────────────────────────────────
-    path('api/category-search/', views.category_search_ajax,  name='category_search_ajax'),
-    path('api/category-create/', views.category_create_ajax,  name='category_create_ajax'),
-
     # ── Medicine search (AJAX) ────────────────────────────────────────────────
-    path('api/medicine-search/', views.medicine_search_ajax, name='medicine_search_ajax'),
+    path('api/medicine-search/',    views.medicine_search_ajax,  name='medicine_search_ajax'),
+    path('api/category-search/',    views.category_search_ajax,  name='category_search_ajax'),
+    path('api/category-create/',    views.category_create_ajax,  name='category_create_ajax'),
 
     # ── Stock Management ──────────────────────────────────────────────────────
     path('stock/',               views.stock_management_view, name='stock_management'),
@@ -34,17 +32,17 @@ urlpatterns = [
     path('stock/medicine-info/', views.stock_medicine_info,   name='stock_medicine_info'),
 
     # ── Dispensing / Sales ────────────────────────────────────────────────────
-    path('dispensing/',                     views.dispensing_view,    name='dispensing'),
-    path('dispensing/create/',              views.dispensing_create,  name='dispensing_create'),
-    path('dispensing/receipt/<int:pk>/',    views.dispensing_receipt, name='dispensing_receipt'),
+    path('dispensing/',                  views.dispensing_view,    name='dispensing'),
+    path('dispensing/create/',           views.dispensing_create,  name='dispensing_create'),
+    path('dispensing/receipt/<int:pk>/', views.dispensing_receipt, name='dispensing_receipt'),
 
     # ── Suppliers ─────────────────────────────────────────────────────────────
-    path('suppliers/',                    views.suppliers_view,        name='suppliers'),
-    path('suppliers/add/',                views.supplier_add_view,     name='supplier_add'),
-    path('suppliers/edit/<int:pk>/',      views.supplier_edit_view,    name='supplier_edit'),
-    path('suppliers/delete/<int:pk>/',    views.supplier_delete_view,  name='supplier_delete'),
-    path('suppliers/toggle/<int:pk>/',    views.supplier_toggle_view,  name='supplier_toggle'),
-    path('suppliers/detail/<int:pk>/',    views.supplier_detail_view,  name='supplier_detail'),
+    path('suppliers/',                 views.suppliers_view,       name='suppliers'),
+    path('suppliers/add/',             views.supplier_add_view,    name='supplier_add'),
+    path('suppliers/edit/<int:pk>/',   views.supplier_edit_view,   name='supplier_edit'),
+    path('suppliers/delete/<int:pk>/', views.supplier_delete_view, name='supplier_delete'),
+    path('suppliers/toggle/<int:pk>/', views.supplier_toggle_view, name='supplier_toggle'),
+    path('suppliers/detail/<int:pk>/', views.supplier_detail_view, name='supplier_detail'),
 
     # ── User Management ───────────────────────────────────────────────────────
     path('users/',                   views.user_management_view,    name='user_management'),

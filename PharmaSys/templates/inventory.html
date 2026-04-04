@@ -9,238 +9,181 @@
 
 {% block extra_css %}
 <style>
-    /* ── Summary Cards ───────────────────────────────── */
-    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:22px; }
-    .stat-card { background:#fff; border-radius:14px; padding:18px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1px solid #eef2f7; animation:slideUp .4s ease both; cursor:pointer; transition:box-shadow .2s,transform .15s; text-decoration:none; }
-    .stat-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);transform:translateY(-2px)}
-    .stat-card:nth-child(2){animation-delay:.07s}.stat-card:nth-child(3){animation-delay:.14s}.stat-card:nth-child(4){animation-delay:.21s}
-    @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-    .stat-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
-    .stat-icon.teal{background:rgba(0,173,181,.12);color:#00ADB5}.stat-icon.green{background:rgba(34,197,94,.12);color:#16a34a}
-    .stat-icon.orange{background:rgba(245,158,11,.12);color:#d97706}.stat-icon.red{background:rgba(239,68,68,.12);color:#dc2626}
-    .stat-info{display:flex;flex-direction:column}.stat-value{font-size:24px;font-weight:700;color:#1a2433;line-height:1}
-    .stat-label{font-size:11.5px;color:#78909c;margin-top:3px;font-weight:500}
+/* ── Summary Cards ─────────────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.stat-card{background:#fff;border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #eef2f7;animation:slideUp .4s ease both;cursor:pointer;transition:box-shadow .2s,transform .15s;text-decoration:none}
+.stat-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);transform:translateY(-2px)}
+.stat-card:nth-child(2){animation-delay:.07s}.stat-card:nth-child(3){animation-delay:.14s}.stat-card:nth-child(4){animation-delay:.21s}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.stat-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.stat-icon.teal{background:rgba(0,173,181,.12);color:#00ADB5}.stat-icon.green{background:rgba(34,197,94,.12);color:#16a34a}
+.stat-icon.orange{background:rgba(245,158,11,.12);color:#d97706}.stat-icon.red{background:rgba(239,68,68,.12);color:#dc2626}
+.stat-info{display:flex;flex-direction:column}.stat-value{font-size:24px;font-weight:700;color:#1a2433;line-height:1}
+.stat-label{font-size:11.5px;color:#78909c;margin-top:3px;font-weight:500}
 
-    /* ── Alert Panels ────────────────────────────────── */
-    .alerts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:22px}
-    .alert-panel{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #eef2f7;overflow:hidden;animation:slideUp .4s ease .15s both}
-    .alert-panel-header{display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1px solid #f0f4f8;font-size:13px;font-weight:700;color:#1a2433}
-    .alert-panel-header.orange i{color:#d97706}.alert-panel-header.red i{color:#dc2626}.alert-panel-header.gray i{color:#94a3b8}
-    .alert-panel-badge{margin-left:auto;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
-    .badge-orange{background:rgba(245,158,11,.12);color:#d97706}.badge-red{background:rgba(239,68,68,.12);color:#dc2626}.badge-gray{background:rgba(148,163,184,.12);color:#64748b}
-    .alert-list{padding:6px 0;max-height:220px;overflow-y:auto}
-    .alert-item{display:flex;align-items:center;justify-content:space-between;padding:8px 18px;font-size:12.5px;border-bottom:1px solid #f8fafc;transition:background .15s}
-    .alert-item:last-child{border-bottom:none}.alert-item:hover{background:#f8fafc}
-    .alert-item-name{font-weight:600;color:#1a2433}.alert-item-sub{font-size:11px;color:#94a3b8;margin-top:1px}
-    .alert-item-qty{font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;flex-shrink:0}
-    .qty-orange{background:rgba(245,158,11,.1);color:#d97706}.qty-red{background:rgba(239,68,68,.1);color:#dc2626}.qty-gray{background:rgba(148,163,184,.1);color:#64748b}
-    .alert-empty{text-align:center;padding:24px;color:#b0bec5;font-size:12.5px}
-    .alert-empty i{display:block;font-size:22px;margin-bottom:6px;color:#dde3ea}
+/* ── Alert Panels ──────────────────────────────────── */
+.alerts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:22px}
+.alert-panel{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #eef2f7;overflow:hidden;animation:slideUp .4s ease .15s both}
+.alert-panel-header{display:flex;align-items:center;gap:9px;padding:14px 18px;border-bottom:1px solid #f0f4f8;font-size:13px;font-weight:700;color:#1a2433}
+.alert-panel-header.orange i{color:#d97706}.alert-panel-header.red i{color:#dc2626}.alert-panel-header.gray i{color:#94a3b8}
+.alert-panel-badge{margin-left:auto;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+.badge-orange{background:rgba(245,158,11,.12);color:#d97706}.badge-red{background:rgba(239,68,68,.12);color:#dc2626}.badge-gray{background:rgba(148,163,184,.12);color:#64748b}
+.alert-list{padding:6px 0;max-height:220px;overflow-y:auto}
+.alert-item{display:flex;align-items:center;justify-content:space-between;padding:8px 18px;font-size:12.5px;border-bottom:1px solid #f8fafc;transition:background .15s}
+.alert-item:last-child{border-bottom:none}.alert-item:hover{background:#f8fafc}
+.alert-item-name{font-weight:600;color:#1a2433}.alert-item-sub{font-size:11px;color:#94a3b8;margin-top:1px}
+.alert-item-qty{font-size:12px;font-weight:700;padding:3px 8px;border-radius:6px;flex-shrink:0}
+.qty-orange{background:rgba(245,158,11,.1);color:#d97706}.qty-red{background:rgba(239,68,68,.1);color:#dc2626}.qty-gray{background:rgba(148,163,184,.1);color:#64748b}
+.alert-empty{text-align:center;padding:24px;color:#b0bec5;font-size:12.5px}
+.alert-empty i{display:block;font-size:22px;margin-bottom:6px;color:#dde3ea}
 
-    /* ── Table Card ──────────────────────────────────── */
-    .table-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #eef2f7;overflow:hidden;animation:slideUp .4s ease .2s both}
-    .table-toolbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f0f4f8;gap:10px;flex-wrap:wrap}
-    .toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .table-title{font-size:14px;font-weight:700;color:#1a2433}
-    .count-badge{background:rgba(0,173,181,.1);color:#00ADB5;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
-    .filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid #f0f4f8;background:#fafbfc}
-    .filter-label{font-size:11.5px;font-weight:600;color:#78909c}
-    .filter-select{border:1px solid #e0e6ed;border-radius:7px;padding:6px 10px;font-size:12.5px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#fff;cursor:pointer;transition:border-color .2s}
-    .filter-select:focus{border-color:#00ADB5}
-    .search-box{position:relative;display:flex;align-items:center}
-    .search-box i{position:absolute;left:10px;color:#b0bec5;font-size:12px}
-    .search-box input{border:1px solid #e0e6ed;border-radius:7px;padding:7px 12px 7px 30px;font-size:12.5px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;width:210px;background:#f8fafc;transition:border-color .2s,box-shadow .2s}
-    .search-box input:focus{border-color:#00ADB5;box-shadow:0 0 0 3px rgba(0,173,181,.1);background:#fff}
-    .btn-scan{display:flex;align-items:center;gap:6px;background:#f0f4f8;color:#64748b;border:1px solid #e0e6ed;border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s,color .2s}
-    .btn-scan:hover{background:#e0e6ed;color:#1a2433}
-    .btn-add{display:flex;align-items:center;gap:7px;background:#00ADB5;color:#fff;border:none;border-radius:9px;padding:8px 16px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s,transform .15s;box-shadow:0 2px 8px rgba(0,173,181,.25);white-space:nowrap}
-    .btn-add:hover{background:#008C9E;transform:translateY(-1px)}
-    .per-page-wrap{display:flex;align-items:center;gap:6px;font-size:12px;color:#78909c}
-    .per-page-wrap select{border:1px solid #e0e6ed;border-radius:6px;padding:4px 8px;font-size:12px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#fff;cursor:pointer}
-    .per-page-wrap select:focus{border-color:#00ADB5}
-    .data-table{width:100%;border-collapse:collapse}
-    .data-table thead th{background:#f8fafc;padding:10px 16px;text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#78909c;border-bottom:1px solid #eef2f7;white-space:nowrap}
-    .data-table tbody tr{border-bottom:1px solid #f4f7fb;transition:background .15s}
-    .data-table tbody tr:last-child{border-bottom:none}.data-table tbody tr:hover{background:#f8fafc}
-    .data-table td{padding:12px 16px;font-size:12.5px;color:#1a2433;vertical-align:middle}
-    .data-table tbody tr.highlight-row{background:rgba(0,173,181,.08)!important;outline:2px solid #00ADB5;outline-offset:-2px;animation:highlightPulse 1.5s ease 3}
-    @keyframes highlightPulse{0%,100%{background:rgba(0,173,181,.08)}50%{background:rgba(0,173,181,.2)}}
-    .med-name{font-weight:600;color:#1a2433}.med-sub{font-size:11px;color:#94a3b8;margin-top:1px}
-    .stock-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-    .stock-badge.in-stock{background:rgba(34,197,94,.1);color:#16a34a}.stock-badge.low-stock{background:rgba(245,158,11,.1);color:#d97706}.stock-badge.out-stock{background:rgba(239,68,68,.1);color:#dc2626}
-    .stock-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-    .in-stock .stock-dot{background:#16a34a}.low-stock .stock-dot{background:#d97706}.out-stock .stock-dot{background:#dc2626}
-    .expiry-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px}
-    .expiry-badge.ok{color:#64748b}.expiry-badge.soon{background:rgba(245,158,11,.1);color:#d97706}.expiry-badge.expired{background:rgba(239,68,68,.1);color:#dc2626}
-    .action-btns{display:flex;align-items:center;gap:5px}
-    .btn-icon{width:30px;height:30px;border-radius:7px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:background .15s,transform .15s}
-    .btn-icon:hover{transform:translateY(-1px)}.btn-icon:disabled{opacity:.3;cursor:not-allowed;transform:none}
-    .btn-icon.edit{background:rgba(0,173,181,.1);color:#00ADB5}.btn-icon.edit:hover{background:rgba(0,173,181,.2)}
-    .btn-icon.stock-in{background:rgba(34,197,94,.1);color:#16a34a}.btn-icon.stock-in:hover{background:rgba(34,197,94,.2)}
-    .btn-icon.stock-out{background:rgba(245,158,11,.1);color:#d97706}.btn-icon.stock-out:hover{background:rgba(245,158,11,.2)}
-    .btn-icon.delete{background:rgba(239,68,68,.1);color:#dc2626}.btn-icon.delete:hover{background:rgba(239,68,68,.2)}
-    .empty-state{text-align:center;padding:56px 20px}
-    .empty-state i{font-size:38px;margin-bottom:12px;display:block;color:#d1d9e0}
-    .empty-state p{font-size:13.5px;color:#90a4ae}
+/* ── Table Card ────────────────────────────────────── */
+.table-card{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #eef2f7;overflow:hidden;animation:slideUp .4s ease .2s both}
+.table-toolbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f0f4f8;gap:10px;flex-wrap:wrap}
+.toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.table-title{font-size:14px;font-weight:700;color:#1a2433}
+.count-badge{background:rgba(0,173,181,.1);color:#00ADB5;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid #f0f4f8;background:#fafbfc}
+.filter-label{font-size:11.5px;font-weight:600;color:#78909c}
+.filter-select{border:1px solid #e0e6ed;border-radius:7px;padding:6px 10px;font-size:12.5px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#fff;cursor:pointer;transition:border-color .2s}
+.filter-select:focus{border-color:#00ADB5}
+.search-box{position:relative;display:flex;align-items:center}
+.search-box i{position:absolute;left:10px;color:#b0bec5;font-size:12px}
+.search-box input{border:1px solid #e0e6ed;border-radius:7px;padding:7px 12px 7px 30px;font-size:12.5px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;width:210px;background:#f8fafc;transition:border-color .2s,box-shadow .2s}
+.search-box input:focus{border-color:#00ADB5;box-shadow:0 0 0 3px rgba(0,173,181,.1);background:#fff}
+.btn-scan{display:flex;align-items:center;gap:6px;background:#f0f4f8;color:#64748b;border:1px solid #e0e6ed;border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s,color .2s}
+.btn-scan:hover{background:#e0e6ed;color:#1a2433}
+.btn-add{display:flex;align-items:center;gap:7px;background:#00ADB5;color:#fff;border:none;border-radius:9px;padding:8px 16px;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s,transform .15s;box-shadow:0 2px 8px rgba(0,173,181,.25);white-space:nowrap}
+.btn-add:hover{background:#008C9E;transform:translateY(-1px)}
+.per-page-wrap{display:flex;align-items:center;gap:6px;font-size:12px;color:#78909c}
+.per-page-wrap select{border:1px solid #e0e6ed;border-radius:6px;padding:4px 8px;font-size:12px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#fff;cursor:pointer}
+.per-page-wrap select:focus{border-color:#00ADB5}
 
-    /* ── Pagination ──────────────────────────────────── */
-    .pagination-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #f0f4f8;flex-wrap:wrap;gap:10px}
-    .pagination-info{font-size:12.5px;color:#78909c}.pagination-info strong{color:#1a2433}
-    .pagination-links{display:flex;align-items:center;gap:4px}
-    .page-btn{width:32px;height:32px;border-radius:8px;border:1px solid #e0e6ed;background:#fff;color:#64748b;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,border-color .15s}
-    .page-btn:hover{background:#f0f4f8;border-color:#cdd5df}.page-btn.active{background:#00ADB5;border-color:#00ADB5;color:#fff}.page-btn.disabled{opacity:.4;pointer-events:none}
+/* ── Data Table ────────────────────────────────────── */
+.data-table{width:100%;border-collapse:collapse}
+.data-table thead th{background:#f8fafc;padding:10px 16px;text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#78909c;border-bottom:1px solid #eef2f7;white-space:nowrap}
+.data-table tbody tr.med-row{border-bottom:1px solid #f4f7fb;transition:background .15s}
+.data-table tbody tr.med-row:hover{background:#f8fafc}
+.data-table td{padding:11px 16px;font-size:12.5px;color:#1a2433;vertical-align:middle}
+.data-table tbody tr.highlight-row{background:rgba(0,173,181,.08)!important;outline:2px solid #00ADB5;outline-offset:-2px;animation:highlightPulse 1.5s ease 3}
+@keyframes highlightPulse{0%,100%{background:rgba(0,173,181,.08)}50%{background:rgba(0,173,181,.2)}}
+.med-name{font-weight:600;color:#1a2433}.med-sub{font-size:11px;color:#94a3b8;margin-top:1px}
 
-    /* ── Scanner overlay ─────────────────────────────── */
-    .scanner-overlay{display:none;position:fixed;inset:0;z-index:3000;background:rgba(13,27,42,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center}
-    .scanner-overlay.open{display:flex}
-    .scanner-box{background:#fff;border-radius:18px;width:400px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.25);animation:modalIn .25s cubic-bezier(.34,1.56,.64,1) both}
-    .scanner-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid #f0f4f8}
-    .scanner-title{font-size:15px;font-weight:700;color:#1a2433;display:flex;align-items:center;gap:8px}
-    .scanner-title i{color:#00ADB5}
-    .scanner-body{padding:20px 22px}
-    #scannerVideo{width:100%;border-radius:10px;background:#0d1b2a;min-height:200px;object-fit:cover}
-    .scanner-status{text-align:center;margin-top:12px;font-size:12.5px;color:#78909c}
-    .scanner-status.found{color:#16a34a;font-weight:600}.scanner-status.notfound{color:#d97706;font-weight:600}.scanner-status.error{color:#dc2626}
-    .scanner-manual{margin-top:14px;display:flex;gap:8px}
-    .scanner-manual input{flex:1;border:1px solid #e0e6ed;border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#f8fafc;transition:border-color .2s}
-    .scanner-manual input:focus{border-color:#00ADB5;box-shadow:0 0 0 3px rgba(0,173,181,.1)}
-    .btn-scan-submit{padding:9px 16px;border-radius:8px;border:none;background:#00ADB5;color:#fff;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s}
-    .btn-scan-submit:hover{background:#008C9E}
+/* ── Stock & Expiry badges ──────────────────────────── */
+.stock-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.stock-badge.in-stock{background:rgba(34,197,94,.1);color:#16a34a}
+.stock-badge.low-stock{background:rgba(245,158,11,.1);color:#d97706}
+.stock-badge.out-stock{background:rgba(239,68,68,.1);color:#dc2626}
+.stock-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.in-stock .stock-dot{background:#16a34a}.low-stock .stock-dot{background:#d97706}.out-stock .stock-dot{background:#dc2626}
+.expiry-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px}
+.expiry-badge.ok{color:#64748b}.expiry-badge.soon{background:rgba(245,158,11,.1);color:#d97706}.expiry-badge.expired{background:rgba(239,68,68,.1);color:#dc2626}
 
-    /* ── Modal ───────────────────────────────────────── */
-    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(13,27,42,.55);backdrop-filter:blur(4px);z-index:2000;align-items:center;justify-content:center}
-    .modal-overlay.open{display:flex}
-    .modal{background:#fff;border-radius:16px;width:100%;max-width:700px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:modalIn .25s cubic-bezier(.34,1.56,.64,1) both;overflow:hidden}
-    @keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
-    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid #f0f4f8;flex-shrink:0}
-    .modal-title{font-size:15px;font-weight:700;color:#1a2433;display:flex;align-items:center;gap:9px}
-    .modal-title i{color:#00ADB5;font-size:14px}
-    .modal-close{width:30px;height:30px;border-radius:8px;border:none;background:#f0f4f8;color:#78909c;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s,color .15s}
-    .modal-close:hover{background:#e0e6ed;color:#1a2433}
-    .modal-body{padding:20px 22px;overflow-y:auto;flex:1}
-    .section-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#00ADB5;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f4f8}
-    .section-label:first-child{margin-top:0}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .form-grid.three{grid-template-columns:1fr 1fr 1fr}
-    .form-group{display:flex;flex-direction:column;gap:4px}
-    .form-label{font-size:11.5px;font-weight:600;color:#64748b;letter-spacing:.3px}
-    .form-control{width:100%;padding:8px 11px;border:1px solid #e0e6ed;border-radius:8px;font-size:12.5px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#f8fafc;transition:border-color .2s,box-shadow .2s}
-    .form-control:focus{border-color:#00ADB5;box-shadow:0 0 0 3px rgba(0,173,181,.1);background:#fff}
-    select.form-control{cursor:pointer}
-    .modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid #f0f4f8;background:#fafbfc;flex-shrink:0}
-    .btn-cancel{padding:8px 18px;border-radius:8px;border:1px solid #e0e6ed;background:#fff;color:#64748b;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .15s}
-    .btn-cancel:hover{background:#f0f4f8}
-    .btn-submit{padding:8px 22px;border-radius:8px;border:none;background:#00ADB5;color:#fff;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s;box-shadow:0 2px 8px rgba(0,173,181,.25)}
-    .btn-submit:hover{background:#008C9E}
-    .modal.modal-sm{max-width:380px}
-    .delete-body{padding:24px;text-align:center}
-    .delete-icon{width:54px;height:54px;border-radius:50%;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px;color:#dc2626}
-    .delete-title{font-size:15px;font-weight:700;color:#1a2433;margin-bottom:5px}
-    .delete-msg{font-size:12.5px;color:#78909c;line-height:1.5}
-    .delete-msg strong{color:#1a2433}
-    .btn-danger{padding:8px 20px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s}
-    .btn-danger:hover{background:#b91c1c}
-    .modal.modal-sm.stock-modal{max-width:400px}
-    .stock-adjust-type{display:flex;gap:8px;margin-bottom:16px}
-    .type-btn{flex:1;padding:10px;border-radius:9px;border:2px solid #e0e6ed;background:#fff;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;text-align:center}
-    .type-btn.in.active{border-color:#16a34a;background:rgba(34,197,94,.08);color:#16a34a}
-    .type-btn.out.active{border-color:#d97706;background:rgba(245,158,11,.08);color:#d97706}
-    .type-btn:not(.active){color:#94a3b8}
+/* ── Batch expand ──────────────────────────────────── */
+.btn-batch-toggle{display:inline-flex;align-items:center;gap:5px;background:rgba(0,173,181,.08);color:#00ADB5;border:1px solid rgba(0,173,181,.2);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .15s;margin-top:4px}
+.btn-batch-toggle:hover{background:rgba(0,173,181,.16)}
+.btn-batch-toggle i{font-size:10px;transition:transform .2s}
+.btn-batch-toggle.open i{transform:rotate(180deg)}
+.batch-expand-row{display:none}
+.batch-expand-row.open{display:table-row}
+.batch-expand-cell{padding:0!important;background:#f0f6ff!important;border-bottom:2px solid #bae6fd!important}
+.batch-inner{padding:12px 20px 14px 52px}
+.batch-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7c3aed;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.batch-table{width:100%;border-collapse:collapse;font-size:12px}
+.batch-table th{background:#e8f0fe;padding:7px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#3b5bdb;border-bottom:1px solid #d0deff}
+.batch-table td{padding:7px 12px;border-bottom:1px solid #e8f0fe;color:#1a2433;vertical-align:middle}
+.batch-table tr:last-child td{border-bottom:none}
+.batch-table tr:hover td{background:#e8f0fe55}
+.fefo-tag{display:inline-flex;align-items:center;gap:3px;background:rgba(22,163,74,.1);color:#16a34a;border-radius:20px;padding:2px 7px;font-size:9px;font-weight:700;margin-right:4px}
 
-    /* ── Searchable Category Picker ──────────────────── */
-    .cat-picker { position: relative; }
+/* ── Action buttons ────────────────────────────────── */
+.action-btns{display:flex;align-items:center;gap:5px}
+.btn-icon{width:30px;height:30px;border-radius:7px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:background .15s,transform .15s}
+.btn-icon:hover{transform:translateY(-1px)}.btn-icon:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.btn-icon.edit{background:rgba(0,173,181,.1);color:#00ADB5}.btn-icon.edit:hover{background:rgba(0,173,181,.2)}
+.btn-icon.delete{background:rgba(239,68,68,.1);color:#dc2626}.btn-icon.delete:hover{background:rgba(239,68,68,.2)}
 
-    .cat-picker-wrap {
-        display: flex; align-items: center;
-        border: 1px solid #e0e6ed; border-radius: 8px;
-        background: #f8fafc;
-        transition: border-color .2s, box-shadow .2s;
-        overflow: hidden;
-    }
-    .cat-picker-wrap:focus-within {
-        border-color: #00ADB5;
-        box-shadow: 0 0 0 3px rgba(0,173,181,.1);
-        background: #fff;
-    }
+/* ── Pagination ────────────────────────────────────── */
+.pagination-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid #f0f4f8;flex-wrap:wrap;gap:10px}
+.pagination-info{font-size:12.5px;color:#78909c}.pagination-info strong{color:#1a2433}
+.pagination-links{display:flex;align-items:center;gap:4px}
+.page-btn{width:32px;height:32px;border-radius:8px;border:1px solid #e0e6ed;background:#fff;color:#64748b;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,border-color .15s}
+.page-btn:hover{background:#f0f4f8;border-color:#cdd5df}.page-btn.active{background:#00ADB5;border-color:#00ADB5;color:#fff}.page-btn.disabled{opacity:.4;pointer-events:none}
 
-    .cat-search-input {
-        flex: 1; border: none; background: transparent;
-        padding: 8px 11px; font-size: 12.5px;
-        font-family: 'Poppins', sans-serif; color: #1a2433;
-        outline: none;
-    }
+/* ── Scanner overlay ───────────────────────────────── */
+.scanner-overlay{display:none;position:fixed;inset:0;z-index:3000;background:rgba(13,27,42,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+.scanner-overlay.open{display:flex}
+.scanner-box{background:#fff;border-radius:18px;width:400px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.25);animation:modalIn .25s cubic-bezier(.34,1.56,.64,1) both}
+.scanner-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid #f0f4f8}
+.scanner-title{font-size:15px;font-weight:700;color:#1a2433;display:flex;align-items:center;gap:8px}.scanner-title i{color:#00ADB5}
+.scanner-body{padding:20px 22px}
+#scannerVideo{width:100%;border-radius:10px;background:#0d1b2a;min-height:200px;object-fit:cover}
+.scanner-status{text-align:center;margin-top:12px;font-size:12.5px;color:#78909c}
+.scanner-status.found{color:#16a34a;font-weight:600}.scanner-status.notfound{color:#d97706;font-weight:600}.scanner-status.error{color:#dc2626}
+.scanner-manual{margin-top:14px;display:flex;gap:8px}
+.scanner-manual input{flex:1;border:1px solid #e0e6ed;border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#f8fafc}
+.scanner-manual input:focus{border-color:#00ADB5;box-shadow:0 0 0 3px rgba(0,173,181,.1)}
+.btn-scan-submit{padding:9px 16px;border-radius:8px;border:none;background:#00ADB5;color:#fff;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer}
 
-    .cat-clear-btn {
-        width: 28px; height: 28px; border: none;
-        background: transparent; color: #b0bec5;
-        cursor: pointer; font-size: 12px;
-        display: none; align-items: center;
-        justify-content: center; flex-shrink: 0;
-        transition: color .15s;
-    }
-    .cat-clear-btn:hover { color: #dc2626; }
-    .cat-clear-btn.show { display: flex; }
+/* ── Modal ─────────────────────────────────────────── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(13,27,42,.55);backdrop-filter:blur(4px);z-index:2000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:modalIn .25s cubic-bezier(.34,1.56,.64,1) both;overflow:hidden}
+@keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid #f0f4f8;flex-shrink:0}
+.modal-title{font-size:15px;font-weight:700;color:#1a2433;display:flex;align-items:center;gap:9px}
+.modal-title i{color:#00ADB5;font-size:14px}
+.modal-close{width:30px;height:30px;border-radius:8px;border:none;background:#f0f4f8;color:#78909c;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s}
+.modal-close:hover{background:#e0e6ed;color:#1a2433}
+.modal-body{padding:20px 22px;overflow-y:auto;flex:1}
+.section-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#00ADB5;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f4f8}
+.section-label:first-child{margin-top:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid.three{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11.5px;font-weight:600;color:#64748b;letter-spacing:.3px}
+.form-control{width:100%;padding:8px 11px;border:1px solid #e0e6ed;border-radius:8px;font-size:12.5px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#f8fafc;transition:border-color .2s,box-shadow .2s}
+.form-control:focus{border-color:#00ADB5;box-shadow:0 0 0 3px rgba(0,173,181,.1);background:#fff}
+select.form-control{cursor:pointer}
+.modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid #f0f4f8;background:#fafbfc;flex-shrink:0}
+.btn-cancel{padding:8px 18px;border-radius:8px;border:1px solid #e0e6ed;background:#fff;color:#64748b;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer}
+.btn-cancel:hover{background:#f0f4f8}
+.btn-submit{padding:8px 22px;border-radius:8px;border:none;background:#00ADB5;color:#fff;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(0,173,181,.25)}
+.btn-submit:hover{background:#008C9E}
+.modal.modal-sm{max-width:380px}
+.delete-body{padding:24px;text-align:center}
+.delete-icon{width:54px;height:54px;border-radius:50%;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px;color:#dc2626}
+.delete-title{font-size:15px;font-weight:700;color:#1a2433;margin-bottom:5px}
+.delete-msg{font-size:12.5px;color:#78909c;line-height:1.5}.delete-msg strong{color:#1a2433}
+.btn-danger{padding:8px 20px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer}
+.btn-danger:hover{background:#b91c1c}
 
-    .cat-dropdown {
-        display: none; position: absolute;
-        top: 100%; left: 0; right: 0;
-        background: #fff;
-        border: 1px solid #e0e6ed; border-top: none;
-        border-radius: 0 0 10px 10px;
-        box-shadow: 0 8px 24px rgba(0,0,0,.1);
-        max-height: 200px; overflow-y: auto;
-        z-index: 600;
-    }
-    .cat-dropdown.open { display: block; }
+/* ── Category picker ───────────────────────────────── */
+.cat-picker{position:relative}
+.cat-picker-wrap{display:flex;align-items:center;border:1px solid #e0e6ed;border-radius:8px;background:#f8fafc;transition:border-color .2s,box-shadow .2s;overflow:hidden}
+.cat-picker-wrap:focus-within{border-color:#00ADB5;box-shadow:0 0 0 3px rgba(0,173,181,.1);background:#fff}
+.cat-search-input{flex:1;border:none;background:transparent;padding:8px 11px;font-size:12.5px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none}
+.cat-clear-btn{width:28px;height:28px;border:none;background:transparent;color:#b0bec5;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .15s}
+.cat-clear-btn:hover{color:#dc2626}
+.cat-dropdown{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e0e6ed;border-top:none;border-radius:0 0 10px 10px;box-shadow:0 8px 24px rgba(0,0,0,.1);max-height:200px;overflow-y:auto;z-index:600}
+.cat-dropdown.open{display:block}
+.cat-option{padding:9px 13px;cursor:pointer;font-size:12.5px;color:#1a2433;transition:background .15s;border-bottom:1px solid #f4f7fb}
+.cat-option:last-child{border-bottom:none}.cat-option:hover{background:#f0f4f8}
+.cat-option.selected{background:rgba(0,173,181,.08);color:#00ADB5;font-weight:600}
+.cat-option-create{padding:9px 13px;cursor:pointer;font-size:12.5px;color:#00ADB5;font-weight:600;display:flex;align-items:center;gap:7px;border-top:1px solid #eef2f7;background:#f8fafc;transition:background .15s;position:sticky;bottom:0}
+.cat-option-create:hover{background:rgba(0,173,181,.08)}.cat-option-create i{font-size:11px}
+.cat-empty{padding:12px 13px;font-size:12px;color:#94a3b8;text-align:center}
 
-    .cat-option {
-        padding: 9px 13px; cursor: pointer;
-        font-size: 12.5px; color: #1a2433;
-        transition: background .15s;
-        border-bottom: 1px solid #f4f7fb;
-    }
-    .cat-option:last-child { border-bottom: none; }
-    .cat-option:hover { background: #f0f4f8; }
-    .cat-option.selected { background: rgba(0,173,181,.08); color: #00ADB5; font-weight: 600; }
+/* ── Info note ─────────────────────────────────────── */
+.info-note{display:flex;align-items:flex-start;gap:9px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:14px}
+.info-note i{color:#d97706;margin-top:1px;flex-shrink:0}
 
-    .cat-option-create {
-        padding: 9px 13px; cursor: pointer;
-        font-size: 12.5px; color: #00ADB5;
-        font-weight: 600;
-        display: flex; align-items: center; gap: 7px;
-        border-top: 1px solid #eef2f7;
-        background: #f8fafc;
-        transition: background .15s;
-        position: sticky; bottom: 0;
-    }
-    .cat-option-create:hover { background: rgba(0,173,181,.08); }
-    .cat-option-create i { font-size: 11px; }
-
-    .cat-empty {
-        padding: 12px 13px; font-size: 12px;
-        color: #94a3b8; text-align: center;
-    }
-
-    /* Selected chip */
-    .cat-selected-chip {
-        display: none; align-items: center; gap: 6px;
-        background: rgba(0,173,181,.1); color: #00ADB5;
-        border-radius: 6px; padding: 4px 10px;
-        font-size: 12px; font-weight: 600;
-        margin-top: 5px;
-    }
-    .cat-selected-chip.show { display: flex; }
-    .cat-chip-remove {
-        border: none; background: transparent;
-        color: #64748b; cursor: pointer; font-size: 11px;
-        padding: 0; line-height: 1;
-        transition: color .15s;
-    }
-    .cat-chip-remove:hover { color: #dc2626; }
-
-    /* Toast */
-    .toast{position:fixed;bottom:26px;right:26px;background:#1a2433;color:#fff;padding:11px 16px;border-radius:10px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:9999;transform:translateY(70px);opacity:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;pointer-events:none;max-width:360px}
-    .toast.show{transform:translateY(0);opacity:1}.toast.success i{color:#4ade80}.toast.error i{color:#f87171}
+/* ── Empty / Toast ─────────────────────────────────── */
+.empty-state{text-align:center;padding:56px 20px}
+.empty-state i{font-size:38px;margin-bottom:12px;display:block;color:#d1d9e0}
+.empty-state p{font-size:13.5px;color:#90a4ae}
+.toast{position:fixed;bottom:26px;right:26px;background:#1a2433;color:#fff;padding:11px 16px;border-radius:10px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:9999;transform:translateY(70px);opacity:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;pointer-events:none;max-width:360px}
+.toast.show{transform:translateY(0);opacity:1}.toast.success i{color:#4ade80}.toast.error i{color:#f87171}
 </style>
 {% endblock %}
 
@@ -271,15 +214,39 @@
 <div class="alerts-row">
     <div class="alert-panel">
         <div class="alert-panel-header orange"><i class="fas fa-triangle-exclamation"></i>Low Stock Alert<span class="alert-panel-badge badge-orange">{{ low_stock_count }}</span></div>
-        <div class="alert-list">{% for m in low_stock_items %}<div class="alert-item"><div><div class="alert-item-name">{{ m.medicine_name }}</div><div class="alert-item-sub">{{ m.strength }} · Reorder at {{ m.reorder_level }}</div></div><span class="alert-item-qty qty-orange">{{ m.stock_quantity }} left</span></div>{% empty %}<div class="alert-empty"><i class="fas fa-check-circle" style="color:#4ade80"></i>All stocks sufficient</div>{% endfor %}</div>
+        <div class="alert-list">
+            {% for m in low_stock_items %}
+            <div class="alert-item">
+                <div><div class="alert-item-name">{{ m.medicine_name }}</div><div class="alert-item-sub">{{ m.strength }} · Reorder at {{ m.reorder_level }}</div></div>
+                <span class="alert-item-qty qty-orange">{{ m.stock_quantity }} left</span>
+            </div>
+            {% empty %}<div class="alert-empty"><i class="fas fa-check-circle" style="color:#4ade80"></i>All stocks sufficient</div>{% endfor %}
+        </div>
     </div>
     <div class="alert-panel">
-        <div class="alert-panel-header red"><i class="fas fa-calendar-xmark"></i>Expiring Soon<span class="alert-panel-badge badge-red">{{ expiring_soon_count }}</span></div>
-        <div class="alert-list">{% for m in expiring_items %}<div class="alert-item"><div><div class="alert-item-name">{{ m.medicine_name }}</div><div class="alert-item-sub">Batch: {{ m.batch_number|default:"—" }}</div></div><span class="alert-item-qty qty-red">{{ m.expiry_date|date:"M d, Y" }}</span></div>{% empty %}<div class="alert-empty"><i class="fas fa-check-circle" style="color:#4ade80"></i>No medicines expiring soon</div>{% endfor %}</div>
+        <div class="alert-panel-header red"><i class="fas fa-calendar-xmark"></i>Expiring Soon (Batches)<span class="alert-panel-badge badge-red">{{ expiring_soon_count }}</span></div>
+        <div class="alert-list">
+            {% for b in expiring_batches %}
+            <div class="alert-item">
+                <div>
+                    <div class="alert-item-name">{{ b.medicine.medicine_name }}</div>
+                    <div class="alert-item-sub">Batch: {{ b.batch_number|default:"—" }} · {{ b.quantity }} units</div>
+                </div>
+                <span class="alert-item-qty qty-red">{{ b.expiry_date|date:"M d, Y" }}</span>
+            </div>
+            {% empty %}<div class="alert-empty"><i class="fas fa-check-circle" style="color:#4ade80"></i>No batches expiring soon</div>{% endfor %}
+        </div>
     </div>
     <div class="alert-panel">
         <div class="alert-panel-header gray"><i class="fas fa-ban"></i>Out of Stock<span class="alert-panel-badge badge-gray">{{ out_of_stock_count }}</span></div>
-        <div class="alert-list">{% for m in out_of_stock_items %}<div class="alert-item"><div><div class="alert-item-name">{{ m.medicine_name }}</div><div class="alert-item-sub">{{ m.strength }} · {{ m.get_dosage_form_display }}</div></div><span class="alert-item-qty qty-gray">0 units</span></div>{% empty %}<div class="alert-empty"><i class="fas fa-check-circle" style="color:#4ade80"></i>No out-of-stock medicines</div>{% endfor %}</div>
+        <div class="alert-list">
+            {% for m in out_of_stock_items %}
+            <div class="alert-item">
+                <div><div class="alert-item-name">{{ m.medicine_name }}</div><div class="alert-item-sub">{{ m.strength }} · {{ m.get_dosage_form_display }}</div></div>
+                <span class="alert-item-qty qty-gray">0 units</span>
+            </div>
+            {% empty %}<div class="alert-empty"><i class="fas fa-check-circle" style="color:#4ade80"></i>No out-of-stock medicines</div>{% endfor %}
+        </div>
     </div>
 </div>
 
@@ -309,10 +276,13 @@
                 </div>
             </form>
             <button class="btn-scan" onclick="openScanner()"><i class="fas fa-barcode"></i> Scan</button>
+            {% if can_manage %}
             <button class="btn-add" onclick="openAddModal()"><i class="fas fa-plus"></i> Add Medicine</button>
+            {% endif %}
         </div>
     </div>
 
+    <!-- Filter bar -->
     <div class="filter-bar">
         <span class="filter-label">Filter:</span>
         <select class="filter-select" onchange="applyFilter('category',this.value)">
@@ -328,72 +298,154 @@
             <option value="low_stock"    {% if status_filter == 'low_stock'    %}selected{% endif %}>Low Stock</option>
             <option value="out_of_stock" {% if status_filter == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
             <option value="expiring"     {% if status_filter == 'expiring'     %}selected{% endif %}>Expiring Soon</option>
-            <option value="expired"      {% if status_filter == 'expired'      %}selected{% endif %}>Expired</option>
+            <option value="expired"      {% if status_filter == 'expired'      %}selected{% endif %}>Has Expired Batch</option>
         </select>
         {% if search or category_id or status_filter or dosage_filter %}
         <a href="{% url 'inventory' %}" style="font-size:12px;color:#dc2626;text-decoration:none;font-weight:600;"><i class="fas fa-xmark"></i> Clear</a>
         {% endif %}
     </div>
 
+    <!-- Table -->
     <table class="data-table">
-        <thead><tr><th>#</th><th>Medicine</th><th>Category</th><th>Dosage</th><th>Supplier</th><th>Batch / Expiry</th><th>Sell Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead>
+            <tr>
+                <th>#</th><th>Medicine</th><th>Category</th><th>Dosage</th>
+                <th>Supplier</th><th>Earliest Expiry (FEFO)</th><th>Sell Price</th>
+                <th>Total Stock</th><th>Status</th><th>Actions</th>
+            </tr>
+        </thead>
         <tbody>
             {% for m in medicines %}
-            <tr id="row-{{ m.pk }}" {% if highlight_pk == m.pk|stringformat:'s' %}class="highlight-row"{% endif %}>
+            {# ─── Medicine row ─── #}
+            <tr class="med-row {% if highlight_pk == m.pk|stringformat:'s' %}highlight-row{% endif %}" id="row-{{ m.pk }}">
                 <td style="color:#b0bec5;font-size:11.5px;">{{ page_obj.start_index|add:forloop.counter0 }}</td>
-                <td><div class="med-name">{{ m.medicine_name }}</div><div class="med-sub">{{ m.generic_name }}{% if m.brand_name %} · {{ m.brand_name }}{% endif %} · {{ m.strength }}</div></td>
+                <td>
+                    <div class="med-name">{{ m.medicine_name }}</div>
+                    <div class="med-sub">{{ m.generic_name }}{% if m.brand_name %} · {{ m.brand_name }}{% endif %} · {{ m.strength }}</div>
+                </td>
                 <td style="color:#64748b;">{{ m.category.name|default:"—" }}</td>
                 <td style="color:#64748b;">{{ m.get_dosage_form_display }}</td>
                 <td style="color:#64748b;font-size:12px;">{{ m.supplier.name|default:"—" }}</td>
+
+                {# ── FEFO expiry: use the earliest_expiry property — no {% break %} needed ── #}
                 <td>
-                    <div style="font-size:12px;color:#64748b;">{{ m.batch_number|default:"—" }}</div>
-                    {% if m.expiry_date %}
-                        {% if m.is_expired %}<span class="expiry-badge expired"><i class="fas fa-circle-xmark"></i>Expired {{ m.expiry_date|date:"M d, Y" }}</span>
-                        {% elif m.is_expiring_soon %}<span class="expiry-badge soon"><i class="fas fa-clock"></i>{{ m.expiry_date|date:"M d, Y" }}</span>
-                        {% else %}<span class="expiry-badge ok">{{ m.expiry_date|date:"M d, Y" }}</span>{% endif %}
-                    {% else %}<span style="font-size:11.5px;color:#b0bec5;">No expiry</span>{% endif %}
+                    {% if m.earliest_expiry %}
+                        {% if m.is_expired %}
+                            <span class="expiry-badge expired"><i class="fas fa-circle-xmark"></i> Expired {{ m.earliest_expiry|date:"M d, Y" }}</span>
+                        {% elif m.is_expiring_soon %}
+                            <span class="expiry-badge soon"><i class="fas fa-clock"></i> {{ m.earliest_expiry|date:"M d, Y" }}</span>
+                        {% else %}
+                            <span class="expiry-badge ok">{{ m.earliest_expiry|date:"M d, Y" }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span style="font-size:11.5px;color:#b0bec5;">No expiry set</span>
+                    {% endif %}
                 </td>
+
                 <td style="font-weight:600;">₱{{ m.selling_price }}</td>
+
                 <td>
-                    <span id="qty-{{ m.pk }}" style="font-size:14px;font-weight:700;color:{% if m.is_out_of_stock %}#dc2626{% elif m.is_low_stock %}#d97706{% else %}#16a34a{% endif %};">{{ m.stock_quantity }}</span>
-                    <span style="font-size:11px;color:#b0bec5;"> units</span>
+                    <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;">
+                        <span id="qty-{{ m.pk }}" style="font-size:14px;font-weight:700;color:{% if m.is_out_of_stock %}#dc2626{% elif m.is_low_stock %}#d97706{% else %}#16a34a{% endif %};">{{ m.stock_quantity }}</span>
+                        {% with batch_count=m.batches.count %}
+                        {% if batch_count > 0 %}
+                        <button type="button" class="btn-batch-toggle" id="btntoggle-{{ m.pk }}" onclick="toggleBatches({{ m.pk }})">
+                            <i class="fas fa-chevron-down"></i> {{ batch_count }} batch{{ batch_count|pluralize:"es" }}
+                        </button>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
                 </td>
+
                 <td>
                     <span id="status-{{ m.pk }}" class="stock-badge {% if m.is_out_of_stock %}out-stock{% elif m.is_low_stock %}low-stock{% else %}in-stock{% endif %}">
                         <span class="stock-dot"></span>
                         {% if m.is_out_of_stock %}Out of Stock{% elif m.is_low_stock %}Low Stock{% else %}In Stock{% endif %}
                     </span>
                 </td>
+
                 <td>
                     <div class="action-btns">
-                        <button class="btn-icon edit" title="Edit"
+                        {% if can_manage %}
+                        <button class="btn-icon edit" title="Edit Medicine"
                             data-pk="{{ m.pk }}"
                             data-medicine_name="{{ m.medicine_name }}"
                             data-generic_name="{{ m.generic_name }}"
-                            data-brand_name="{{ m.brand_name }}"
+                            data-brand_name="{{ m.brand_name|default:'' }}"
                             data-category-pk="{{ m.category_id|default:'' }}"
                             data-category-name="{{ m.category.name|default:'' }}"
                             data-dosage_form="{{ m.dosage_form }}"
                             data-strength="{{ m.strength }}"
-                            data-manufacturer="{{ m.manufacturer }}"
+                            data-manufacturer="{{ m.manufacturer|default:'' }}"
                             data-supplier="{{ m.supplier_id|default:'' }}"
                             data-barcode="{{ m.barcode|default:'' }}"
-                            data-batch_number="{{ m.batch_number }}"
-                            data-expiry_date="{{ m.expiry_date|date:'Y-m-d'|default:'' }}"
-                            data-purchase_price="{{ m.purchase_price }}"
                             data-selling_price="{{ m.selling_price }}"
-                            data-stock_quantity="{{ m.stock_quantity }}"
                             data-reorder_level="{{ m.reorder_level }}"
-                            data-storage_location="{{ m.storage_location }}"
+                            data-storage_location="{{ m.storage_location|default:'' }}"
                             onclick="openEditModal(this)">
                             <i class="fas fa-pen-to-square"></i>
                         </button>
-                        <button class="btn-icon stock-in" title="Add Stock" data-pk="{{ m.pk }}" data-name="{{ m.medicine_name }}" onclick="openStockModal(this,'in')"><i class="fas fa-plus"></i></button>
-                        <button class="btn-icon stock-out" title="Remove Stock" data-pk="{{ m.pk }}" data-name="{{ m.medicine_name }}" onclick="openStockModal(this,'out')"><i class="fas fa-minus"></i></button>
-                        <button class="btn-icon delete" title="Remove" data-pk="{{ m.pk }}" data-name="{{ m.medicine_name }}" onclick="openDeleteModal(this)"><i class="fas fa-trash-can"></i></button>
+                        {% endif %}
+                        {% if can_admin %}
+                        <button class="btn-icon delete" title="Remove Medicine"
+                                data-pk="{{ m.pk }}"
+                                data-name="{{ m.medicine_name }}"
+                                onclick="openDeleteModal(this)">
+                            <i class="fas fa-trash-can"></i>
+                        </button>
+                        {% endif %}
                     </div>
                 </td>
             </tr>
+
+            {# ─── Batch expand row ─── #}
+            <tr class="batch-expand-row" id="batchrow-{{ m.pk }}">
+                <td class="batch-expand-cell" colspan="10">
+                    <div class="batch-inner">
+                        <div class="batch-label"><i class="fas fa-layer-group"></i> Batches for {{ m.medicine_name }} — FEFO Order (oldest expiry deducted first)</div>
+                        <table class="batch-table">
+                            <thead>
+                                <tr>
+                                    <th>Batch No.</th><th>Expiry Date</th><th>Qty</th>
+                                    <th>Purchase Price</th><th>Supplier</th><th>Received</th><th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for b in m.batches.all %}
+                                <tr>
+                                    <td>
+                                        {% if forloop.first and b.quantity > 0 %}<span class="fefo-tag"><i class="fas fa-star"></i>FEFO 1st</span>{% endif %}
+                                        <span style="font-family:monospace;font-size:12px;">{{ b.batch_number|default:"No batch no." }}</span>
+                                    </td>
+                                    <td>
+                                        {% if b.expiry_date %}
+                                            {% if b.is_expired %}<span style="color:#dc2626;font-weight:700;">{{ b.expiry_date|date:"M d, Y" }} (Expired)</span>
+                                            {% elif b.is_expiring_soon %}<span style="color:#d97706;font-weight:700;">{{ b.expiry_date|date:"M d, Y" }}</span>
+                                            {% else %}{{ b.expiry_date|date:"M d, Y" }}{% endif %}
+                                        {% else %}<span style="color:#b0bec5;">No expiry</span>{% endif %}
+                                    </td>
+                                    <td style="font-weight:700;color:{% if b.quantity == 0 %}#dc2626{% else %}#1a2433{% endif %};">{{ b.quantity }}</td>
+                                    <td>₱{{ b.purchase_price }}</td>
+                                    <td style="color:#64748b;font-size:11.5px;">
+                                        {% if b.supplier %}{{ b.supplier.name }}{% elif m.supplier %}{{ m.supplier.name }}{% else %}—{% endif %}
+                                    </td>
+                                    <td style="color:#94a3b8;font-size:11.5px;">{{ b.received_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if b.quantity == 0 %}<span style="color:#b0bec5;font-size:11px;">Empty</span>
+                                        {% elif b.is_expired %}<span class="expiry-badge expired">Expired</span>
+                                        {% elif b.is_expiring_soon %}<span class="expiry-badge soon">Expiring</span>
+                                        {% else %}<span class="expiry-badge ok">Active</span>{% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="7" style="text-align:center;color:#b0bec5;padding:12px;">No batches on record.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+
             {% empty %}
             <tr><td colspan="10"><div class="empty-state"><i class="fas fa-pills"></i><p>No medicines found{% if search %} for "<strong>{{ search }}</strong>"{% endif %}.</p></div></td></tr>
             {% endfor %}
@@ -413,10 +465,13 @@
 </div>
 
 
-<!-- ── Scanner Overlay ────────────────────────────────────── -->
+<!-- ── Scanner Overlay ─────────────────────────────────── -->
 <div class="scanner-overlay" id="scannerOverlay">
     <div class="scanner-box">
-        <div class="scanner-header"><div class="scanner-title"><i class="fas fa-barcode"></i>Barcode Scanner</div><button class="modal-close" onclick="closeScanner()"><i class="fas fa-xmark"></i></button></div>
+        <div class="scanner-header">
+            <div class="scanner-title"><i class="fas fa-barcode"></i>Barcode Scanner</div>
+            <button class="modal-close" onclick="closeScanner()"><i class="fas fa-xmark"></i></button>
+        </div>
         <div class="scanner-body">
             <video id="scannerVideo" autoplay playsinline></video>
             <div class="scanner-status" id="scannerStatus">Point camera at a barcode…</div>
@@ -432,7 +487,10 @@
 <!-- ── ADD MODAL ─────────────────────────────────────────── -->
 <div class="modal-overlay" id="addModal">
     <div class="modal">
-        <div class="modal-header"><div class="modal-title"><i class="fas fa-plus-circle"></i>Add New Medicine</div><button class="modal-close" onclick="closeModal('addModal')"><i class="fas fa-xmark"></i></button></div>
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-plus-circle"></i>Add New Medicine</div>
+            <button class="modal-close" onclick="closeModal('addModal')"><i class="fas fa-xmark"></i></button>
+        </div>
         <form method="POST" action="{% url 'inventory_add' %}">{% csrf_token %}
             <div class="modal-body">
                 <div class="section-label">Medicine Information</div>
@@ -440,53 +498,45 @@
                     <div class="form-group"><label class="form-label">Medicine Name *</label><input type="text" name="medicine_name" class="form-control" required></div>
                     <div class="form-group"><label class="form-label">Generic Name *</label><input type="text" name="generic_name" class="form-control" required></div>
                     <div class="form-group"><label class="form-label">Brand Name</label><input type="text" name="brand_name" class="form-control"></div>
-
-                    <!-- ✦ SEARCHABLE CATEGORY PICKER — ADD MODAL ✦ -->
+                    <!-- Searchable Category Picker -->
                     <div class="form-group">
                         <label class="form-label">Category</label>
                         <input type="hidden" name="category" id="add_category_id">
                         <div class="cat-picker" id="add_cat_picker">
                             <div class="cat-picker-wrap">
-                                <input type="text"
-                                       class="cat-search-input"
-                                       id="add_cat_search"
-                                       placeholder="Search or type to add…"
-                                       autocomplete="off"
-                                       oninput="catSearch('add', this.value)"
-                                       onfocus="catSearch('add', this.value)">
-                                <button type="button" class="cat-clear-btn" id="add_cat_clear" onclick="catClear('add')">
-                                    <i class="fas fa-xmark"></i>
-                                </button>
+                                <input type="text" class="cat-search-input" id="add_cat_search" placeholder="Search or type to add…" autocomplete="off" oninput="catSearch('add',this.value)" onfocus="catSearch('add',this.value)">
+                                <button type="button" class="cat-clear-btn" id="add_cat_clear" onclick="catClear('add')"><i class="fas fa-xmark"></i></button>
                             </div>
                             <div class="cat-dropdown" id="add_cat_dropdown"></div>
-                            <div class="cat-selected-chip" id="add_cat_chip">
-                                <span id="add_cat_chip_label"></span>
-                                <button type="button" class="cat-chip-remove" onclick="catClear('add')"><i class="fas fa-xmark"></i></button>
-                            </div>
                         </div>
                     </div>
-
                     <div class="form-group"><label class="form-label">Dosage Form</label><select name="dosage_form" class="form-control">{% for val,label in dosage_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}</select></div>
                     <div class="form-group"><label class="form-label">Strength *</label><input type="text" name="strength" class="form-control" required placeholder="e.g. 500mg"></div>
                     <div class="form-group"><label class="form-label">Manufacturer</label><input type="text" name="manufacturer" class="form-control"></div>
-                    <div class="form-group"><label class="form-label">Supplier</label><select name="supplier" class="form-control"><option value="">— Select —</option>{% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}</select></div>
+                    <div class="form-group"><label class="form-label">Default Supplier</label><select name="supplier" class="form-control"><option value="">— Select —</option>{% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}</select></div>
                 </div>
-                <div class="section-label">Batch & Tracking</div>
+
+                <div class="section-label">Pricing & Settings</div>
                 <div class="form-grid">
+                    <div class="form-group"><label class="form-label">Selling Price (₱)</label><input type="number" name="selling_price" class="form-control" step="0.01" min="0" value="0.00"></div>
+                    <div class="form-group"><label class="form-label">Reorder Level</label><input type="number" name="reorder_level" class="form-control" min="0" value="10"></div>
                     <div class="form-group"><label class="form-label">Barcode</label><input type="text" name="barcode" id="add_barcode" class="form-control"></div>
-                    <div class="form-group"><label class="form-label">Batch Number</label><input type="text" name="batch_number" class="form-control"></div>
-                    <div class="form-group"><label class="form-label">Expiry Date</label><input type="date" name="expiry_date" class="form-control"></div>
                     <div class="form-group"><label class="form-label">Storage Location</label><input type="text" name="storage_location" class="form-control"></div>
                 </div>
-                <div class="section-label">Pricing & Stock</div>
-                <div class="form-grid three">
-                    <div class="form-group"><label class="form-label">Purchase Price (₱)</label><input type="number" name="purchase_price" class="form-control" step="0.01" min="0" value="0.00"></div>
-                    <div class="form-group"><label class="form-label">Selling Price (₱)</label><input type="number" name="selling_price" class="form-control" step="0.01" min="0" value="0.00"></div>
-                    <div class="form-group"><label class="form-label">Stock Quantity</label><input type="number" name="stock_quantity" class="form-control" min="0" value="0"></div>
-                    <div class="form-group"><label class="form-label">Reorder Level</label><input type="number" name="reorder_level" class="form-control" min="0" value="10"></div>
+
+                <div class="section-label">Initial Stock (Optional)</div>
+                <div class="info-note"><i class="fas fa-circle-info"></i>Enter initial stock on hand. Future deliveries are recorded via Stock Management → Stock In which creates new batches.</div>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">Initial Quantity</label><input type="number" name="stock_quantity" class="form-control" min="0" value="0"></div>
+                    <div class="form-group"><label class="form-label">Purchase Price/unit (₱)</label><input type="number" name="purchase_price" class="form-control" step="0.01" min="0" value="0.00"></div>
+                    <div class="form-group"><label class="form-label">Batch Number</label><input type="text" name="batch_number" class="form-control"></div>
+                    <div class="form-group"><label class="form-label">Expiry Date</label><input type="date" name="expiry_date" class="form-control"></div>
                 </div>
             </div>
-            <div class="modal-footer"><button type="button" class="btn-cancel" onclick="closeModal('addModal')">Cancel</button><button type="submit" class="btn-submit"><i class="fas fa-plus" style="margin-right:5px"></i>Add Medicine</button></div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal('addModal')">Cancel</button>
+                <button type="submit" class="btn-submit"><i class="fas fa-plus" style="margin-right:5px"></i>Add Medicine</button>
+            </div>
         </form>
     </div>
 </div>
@@ -495,79 +545,50 @@
 <!-- ── EDIT MODAL ────────────────────────────────────────── -->
 <div class="modal-overlay" id="editModal">
     <div class="modal">
-        <div class="modal-header"><div class="modal-title"><i class="fas fa-pen-to-square"></i>Edit Medicine</div><button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-xmark"></i></button></div>
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-pen-to-square"></i>Edit Medicine Details</div>
+            <button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-xmark"></i></button>
+        </div>
         <form method="POST" id="editForm" action="">{% csrf_token %}
             <div class="modal-body">
+                <div class="info-note"><i class="fas fa-circle-info"></i>Batch details (expiry, batch number, purchase price) are managed through Stock In. This form updates product information only.</div>
+
                 <div class="section-label">Medicine Information</div>
                 <div class="form-grid">
                     <div class="form-group"><label class="form-label">Medicine Name *</label><input type="text" name="medicine_name" id="e_medicine_name" class="form-control" required></div>
                     <div class="form-group"><label class="form-label">Generic Name *</label><input type="text" name="generic_name" id="e_generic_name" class="form-control" required></div>
                     <div class="form-group"><label class="form-label">Brand Name</label><input type="text" name="brand_name" id="e_brand_name" class="form-control"></div>
-
-                    <!-- ✦ SEARCHABLE CATEGORY PICKER — EDIT MODAL ✦ -->
+                    <!-- Searchable Category Picker -->
                     <div class="form-group">
                         <label class="form-label">Category</label>
                         <input type="hidden" name="category" id="edit_category_id">
                         <div class="cat-picker" id="edit_cat_picker">
                             <div class="cat-picker-wrap">
-                                <input type="text"
-                                       class="cat-search-input"
-                                       id="edit_cat_search"
-                                       placeholder="Search or type to add…"
-                                       autocomplete="off"
-                                       oninput="catSearch('edit', this.value)"
-                                       onfocus="catSearch('edit', this.value)">
-                                <button type="button" class="cat-clear-btn" id="edit_cat_clear" onclick="catClear('edit')">
-                                    <i class="fas fa-xmark"></i>
-                                </button>
+                                <input type="text" class="cat-search-input" id="edit_cat_search" placeholder="Search or type to add…" autocomplete="off" oninput="catSearch('edit',this.value)" onfocus="catSearch('edit',this.value)">
+                                <button type="button" class="cat-clear-btn" id="edit_cat_clear" onclick="catClear('edit')"><i class="fas fa-xmark"></i></button>
                             </div>
                             <div class="cat-dropdown" id="edit_cat_dropdown"></div>
-                            <div class="cat-selected-chip" id="edit_cat_chip">
-                                <span id="edit_cat_chip_label"></span>
-                                <button type="button" class="cat-chip-remove" onclick="catClear('edit')"><i class="fas fa-xmark"></i></button>
-                            </div>
                         </div>
                     </div>
-
                     <div class="form-group"><label class="form-label">Dosage Form</label><select name="dosage_form" id="e_dosage_form" class="form-control">{% for val,label in dosage_choices %}<option value="{{ val }}">{{ label }}</option>{% endfor %}</select></div>
                     <div class="form-group"><label class="form-label">Strength *</label><input type="text" name="strength" id="e_strength" class="form-control" required></div>
                     <div class="form-group"><label class="form-label">Manufacturer</label><input type="text" name="manufacturer" id="e_manufacturer" class="form-control"></div>
-                    <div class="form-group"><label class="form-label">Supplier</label><select name="supplier" id="e_supplier" class="form-control"><option value="">— Select —</option>{% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}</select></div>
+                    <div class="form-group"><label class="form-label">Default Supplier</label><select name="supplier" id="e_supplier" class="form-control"><option value="">— Select —</option>{% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}</select></div>
                 </div>
-                <div class="section-label">Batch & Tracking</div>
+
+                <div class="section-label">Pricing & Settings</div>
                 <div class="form-grid">
+                    <div class="form-group"><label class="form-label">Selling Price (₱)</label><input type="number" name="selling_price" id="e_selling_price" class="form-control" step="0.01" min="0"></div>
+                    <div class="form-group"><label class="form-label">Reorder Level</label><input type="number" name="reorder_level" id="e_reorder_level" class="form-control" min="0"></div>
                     <div class="form-group"><label class="form-label">Barcode</label><input type="text" name="barcode" id="e_barcode" class="form-control"></div>
-                    <div class="form-group"><label class="form-label">Batch Number</label><input type="text" name="batch_number" id="e_batch_number" class="form-control"></div>
-                    <div class="form-group"><label class="form-label">Expiry Date</label><input type="date" name="expiry_date" id="e_expiry_date" class="form-control"></div>
                     <div class="form-group"><label class="form-label">Storage Location</label><input type="text" name="storage_location" id="e_storage_location" class="form-control"></div>
                 </div>
-                <div class="section-label">Pricing & Stock</div>
-                <div class="form-grid three">
-                    <div class="form-group"><label class="form-label">Purchase Price (₱)</label><input type="number" name="purchase_price" id="e_purchase_price" class="form-control" step="0.01" min="0"></div>
-                    <div class="form-group"><label class="form-label">Selling Price (₱)</label><input type="number" name="selling_price" id="e_selling_price" class="form-control" step="0.01" min="0"></div>
-                    <div class="form-group"><label class="form-label">Stock Quantity</label><input type="number" name="stock_quantity" id="e_stock_quantity" class="form-control" min="0"></div>
-                    <div class="form-group"><label class="form-label">Reorder Level</label><input type="number" name="reorder_level" id="e_reorder_level" class="form-control" min="0"></div>
-                </div>
             </div>
-            <div class="modal-footer"><button type="button" class="btn-cancel" onclick="closeModal('editModal')">Cancel</button><button type="submit" class="btn-submit"><i class="fas fa-floppy-disk" style="margin-right:5px"></i>Save Changes</button></div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal('editModal')">Cancel</button>
+                <button type="submit" class="btn-submit"><i class="fas fa-floppy-disk" style="margin-right:5px"></i>Save Changes</button>
+            </div>
         </form>
-    </div>
-</div>
-
-
-<!-- ── STOCK MODAL ───────────────────────────────────────── -->
-<div class="modal-overlay" id="stockModal">
-    <div class="modal modal-sm stock-modal">
-        <div class="modal-header"><div class="modal-title" id="stockModalTitle"><i class="fas fa-boxes-stacked"></i>Adjust Stock</div><button class="modal-close" onclick="closeModal('stockModal')"><i class="fas fa-xmark"></i></button></div>
-        <div class="modal-body">
-            <div class="stock-adjust-type">
-                <button class="type-btn in" id="typeInBtn"  onclick="setStockType('in')"><i class="fas fa-plus"></i> Stock In</button>
-                <button class="type-btn out" id="typeOutBtn" onclick="setStockType('out')"><i class="fas fa-minus"></i> Stock Out</button>
-            </div>
-            <div class="form-group" style="margin-bottom:12px;"><label class="form-label">Quantity *</label><input type="number" id="stockQty" class="form-control" min="1" value="1"></div>
-            <div class="form-group"><label class="form-label">Notes</label><input type="text" id="stockNotes" class="form-control" placeholder="Optional reason"></div>
-        </div>
-        <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('stockModal')">Cancel</button><button class="btn-submit" id="stockSubmitBtn" onclick="submitStockAdjust()">Confirm</button></div>
     </div>
 </div>
 
@@ -575,9 +596,16 @@
 <!-- ── DELETE MODAL ──────────────────────────────────────── -->
 <div class="modal-overlay" id="deleteModal">
     <div class="modal modal-sm">
-        <div class="delete-body"><div class="delete-icon"><i class="fas fa-trash-can"></i></div><div class="delete-title">Remove Medicine</div><p class="delete-msg">Remove <strong id="deleteMedName"></strong> from inventory?</p></div>
+        <div class="delete-body">
+            <div class="delete-icon"><i class="fas fa-trash-can"></i></div>
+            <div class="delete-title">Remove Medicine</div>
+            <p class="delete-msg">Remove <strong id="deleteMedName"></strong> from inventory? All batch records will be archived.</p>
+        </div>
         <form method="POST" id="deleteForm" action="">{% csrf_token %}
-            <div class="modal-footer" style="justify-content:center;gap:12px;"><button type="button" class="btn-cancel" onclick="closeModal('deleteModal')">Cancel</button><button type="submit" class="btn-danger"><i class="fas fa-trash-can" style="margin-right:5px"></i>Yes, Remove</button></div>
+            <div class="modal-footer" style="justify-content:center;gap:12px;">
+                <button type="button" class="btn-cancel" onclick="closeModal('deleteModal')">Cancel</button>
+                <button type="submit" class="btn-danger"><i class="fas fa-trash-can" style="margin-right:5px"></i>Yes, Remove</button>
+            </div>
         </form>
     </div>
 </div>
@@ -590,164 +618,32 @@
 <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script>
 const URLS = {
-    inventory_edit:         "{% url 'inventory_edit' pk=0 %}".replace('/0/', '/'),
-    inventory_delete:       "{% url 'inventory_delete' pk=0 %}".replace('/0/', '/'),
-    inventory_stock_adjust: "{% url 'inventory_stock_adjust' pk=0 %}".replace('/0/', '/'),
-    inventory_barcode:      "{% url 'inventory_barcode' %}",
-    category_search:        "{% url 'category_search_ajax' %}",
-    category_create:        "{% url 'category_create_ajax' %}",
+    inventory_edit:    "{% url 'inventory_edit' pk=0 %}".replace('/0/', '/'),
+    inventory_delete:  "{% url 'inventory_delete' pk=0 %}".replace('/0/', '/'),
+    inventory_barcode: "{% url 'inventory_barcode' %}",
+    category_search:   "{% url 'category_search_ajax' %}",
+    category_create:   "{% url 'category_create_ajax' %}",
 };
 const CSRF = '{{ csrf_token }}';
 
-// ═══════════════════════════════════════════════════════════════
-// SEARCHABLE CATEGORY PICKER
-// ═══════════════════════════════════════════════════════════════
-
-let catSearchTimers = {};
-
-/**
- * Fire a debounced search for the given picker (prefix = 'add' | 'edit').
- */
-function catSearch(prefix, query) {
-    clearTimeout(catSearchTimers[prefix]);
-    catSearchTimers[prefix] = setTimeout(() => _catFetch(prefix, query), 250);
+// ── Batch expand toggle ───────────────────────────────────
+function toggleBatches(pk) {
+    const row = document.getElementById('batchrow-' + pk);
+    const btn = document.getElementById('btntoggle-' + pk);
+    if (!row) return;
+    const isOpen = row.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
 }
 
-function _catFetch(prefix, query) {
-    const dropdown  = document.getElementById(`${prefix}_cat_dropdown`);
-    const selectedId = document.getElementById(`${prefix}_category_id`).value;
-
-    fetch(URLS.category_search + '?q=' + encodeURIComponent(query))
-        .then(r => r.json())
-        .then(data => {
-            const items   = data.results;
-            const trimmed = query.trim();
-            let html      = '';
-
-            if (items.length === 0 && !trimmed) {
-                html = `<div class="cat-empty">No categories found.</div>`;
-            } else {
-                html = items.map(c => `
-                    <div class="cat-option ${selectedId == c.pk ? 'selected' : ''}"
-                         onclick="catSelect('${prefix}', ${c.pk}, '${c.name.replace(/'/g,"\\'")}')">
-                        ${c.name}
-                    </div>`).join('');
-            }
-
-            // Show "Add new" option if the typed text doesn't exactly match an existing name
-            const exactMatch = items.some(
-                c => c.name.toLowerCase() === trimmed.toLowerCase()
-            );
-            if (trimmed && !exactMatch) {
-                html += `
-                    <div class="cat-option-create"
-                         onclick="catCreate('${prefix}', '${trimmed.replace(/'/g,"\\'")}')">
-                        <i class="fas fa-plus-circle"></i>
-                        Add "<strong>${trimmed}</strong>" as new category
-                    </div>`;
-            }
-
-            dropdown.innerHTML = html || `<div class="cat-empty">No categories yet.</div>`;
-            dropdown.classList.add('open');
-        })
-        .catch(() => {
-            dropdown.innerHTML = `<div class="cat-empty">Search failed.</div>`;
-            dropdown.classList.add('open');
-        });
-}
-
-/**
- * User clicked an existing category in the dropdown.
- */
-function catSelect(prefix, pk, name) {
-    document.getElementById(`${prefix}_category_id`).value = pk;
-    document.getElementById(`${prefix}_cat_search`).value  = '';
-    document.getElementById(`${prefix}_cat_dropdown`).classList.remove('open');
-
-    // Show chip
-    document.getElementById(`${prefix}_cat_chip_label`).textContent = name;
-    document.getElementById(`${prefix}_cat_chip`).classList.add('show');
-    document.getElementById(`${prefix}_cat_clear`).classList.add('show');
-
-    // Hide search input (chip takes its place visually)
-    document.getElementById(`${prefix}_cat_search`).placeholder = '';
-}
-
-/**
- * User clicked "Add as new category".
- */
-function catCreate(prefix, name) {
-    fetch(URLS.category_create, {
-        method:  'POST',
-        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ name }),
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.pk) {
-            catSelect(prefix, data.pk, data.name);
-            if (!data.existed) {
-                showToast(`Category "${data.name}" created.`, 'success');
-            }
-        } else {
-            showToast(data.error || 'Could not create category.', 'error');
-        }
-    })
-    .catch(() => showToast('Network error.', 'error'));
-}
-
-/**
- * Clear selection.
- */
-function catClear(prefix) {
-    document.getElementById(`${prefix}_category_id`).value = '';
-    document.getElementById(`${prefix}_cat_search`).value  = '';
-    document.getElementById(`${prefix}_cat_search`).placeholder = 'Search or type to add…';
-    document.getElementById(`${prefix}_cat_chip`).classList.remove('show');
-    document.getElementById(`${prefix}_cat_clear`).classList.remove('show');
-    document.getElementById(`${prefix}_cat_dropdown`).classList.remove('open');
-    document.getElementById(`${prefix}_cat_search`).focus();
-}
-
-/**
- * Programmatically set a category (used when opening Edit modal).
- */
-function catSetValue(prefix, pk, name) {
-    if (pk && name) {
-        document.getElementById(`${prefix}_category_id`).value = pk;
-        document.getElementById(`${prefix}_cat_chip_label`).textContent = name;
-        document.getElementById(`${prefix}_cat_chip`).classList.add('show');
-        document.getElementById(`${prefix}_cat_clear`).classList.add('show');
-        document.getElementById(`${prefix}_cat_search`).placeholder = '';
-    } else {
-        catClear(prefix);
-    }
-}
-
-// Close dropdown on outside click
-document.addEventListener('click', e => {
-    ['add', 'edit'].forEach(prefix => {
-        const picker = document.getElementById(`${prefix}_cat_picker`);
-        if (picker && !picker.contains(e.target)) {
-            document.getElementById(`${prefix}_cat_dropdown`).classList.remove('open');
-        }
-    });
-});
-
-// ═══════════════════════════════════════════════════════════════
-// MODAL HELPERS
-// ═══════════════════════════════════════════════════════════════
-
+// ── Modal helpers ─────────────────────────────────────────
 function openModal(id)  { document.getElementById(id).classList.add('open'); }
 function closeModal(id) {
     document.getElementById(id).classList.remove('open');
-    // Reset category pickers when modals close
     if (id === 'addModal')  catClear('add');
     if (id === 'editModal') catClear('edit');
 }
-
-document.querySelectorAll('.modal-overlay').forEach(o => {
-    o.addEventListener('click', e => {
+document.querySelectorAll('.modal-overlay').forEach(function(o) {
+    o.addEventListener('click', function(e) {
         if (e.target === o) {
             o.classList.remove('open');
             if (o.id === 'addModal')  catClear('add');
@@ -756,103 +652,167 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
     });
 });
 
+// ── Add Modal ─────────────────────────────────────────────
 function openAddModal() {
     catClear('add');
     openModal('addModal');
 }
 
+// ── Edit Modal ────────────────────────────────────────────
 function openEditModal(btn) {
+    // Set form action
     document.getElementById('editForm').action = URLS.inventory_edit + btn.getAttribute('data-pk') + '/';
-    ['medicine_name','generic_name','brand_name','dosage_form','strength','manufacturer',
-     'barcode','batch_number','expiry_date','purchase_price','selling_price',
-     'stock_quantity','reorder_level','storage_location'].forEach(f => {
-        const el = document.getElementById('e_' + f);
+
+    // Fill text/number/date fields
+    var fields = ['medicine_name','generic_name','brand_name','dosage_form','strength',
+                  'manufacturer','barcode','selling_price','reorder_level','storage_location'];
+    fields.forEach(function(f) {
+        var el = document.getElementById('e_' + f);
         if (el) el.value = btn.getAttribute('data-' + f) || '';
     });
+
+    // Fill supplier select
     document.getElementById('e_supplier').value = btn.getAttribute('data-supplier') || '';
 
-    // Set category picker
-    const catPk   = btn.getAttribute('data-category-pk')   || '';
-    const catName = btn.getAttribute('data-category-name')  || '';
+    // Fill category picker
+    var catPk   = btn.getAttribute('data-category-pk')   || '';
+    var catName = btn.getAttribute('data-category-name')  || '';
     catSetValue('edit', catPk, catName);
 
     openModal('editModal');
 }
 
+// ── Delete Modal ──────────────────────────────────────────
 function openDeleteModal(btn) {
-    document.getElementById('deleteForm').action = URLS.inventory_delete + btn.dataset.pk + '/';
-    document.getElementById('deleteMedName').textContent = btn.dataset.name;
+    document.getElementById('deleteForm').action = URLS.inventory_delete + btn.getAttribute('data-pk') + '/';
+    document.getElementById('deleteMedName').textContent = btn.getAttribute('data-name');
     openModal('deleteModal');
 }
 
-// ── Stock adjust ──────────────────────────────────────────────
-let currentStockPk = null, currentStockType = 'in';
-function openStockModal(btn, type) {
-    currentStockPk = btn.dataset.pk;
-    setStockType(type);
-    document.getElementById('stockQty').value   = 1;
-    document.getElementById('stockNotes').value = '';
-    document.getElementById('stockModalTitle').innerHTML = `<i class="fas fa-boxes-stacked"></i> ${btn.dataset.name}`;
-    openModal('stockModal');
-}
-function setStockType(type) {
-    currentStockType = type;
-    document.getElementById('typeInBtn').classList.toggle('active',  type === 'in');
-    document.getElementById('typeOutBtn').classList.toggle('active', type === 'out');
-    document.getElementById('stockSubmitBtn').style.background = type === 'in' ? '#16a34a' : '#d97706';
-}
-function submitStockAdjust() {
-    const qty   = parseInt(document.getElementById('stockQty').value);
-    const notes = document.getElementById('stockNotes').value;
-    if (!qty || qty < 1) { showToast('Enter a valid quantity.', 'error'); return; }
-    fetch(URLS.inventory_stock_adjust + currentStockPk + '/', {
-        method: 'POST',
-        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: currentStockType, quantity: qty, notes }),
-    }).then(r => r.json()).then(data => {
-        if (data.success) {
-            closeModal('stockModal');
-            const qtyEl    = document.getElementById('qty-' + currentStockPk);
-            const statusEl = document.getElementById('status-' + currentStockPk);
-            if (qtyEl) {
-                qtyEl.textContent = data.new_quantity;
-                qtyEl.style.color = data.stock_status === 'out_of_stock' ? '#dc2626' :
-                                    data.stock_status === 'low_stock'    ? '#d97706' : '#16a34a';
-            }
-            if (statusEl) {
-                const l = data.stock_status === 'out_of_stock' ? 'Out of Stock' :
-                          data.stock_status === 'low_stock'    ? 'Low Stock' : 'In Stock';
-                const c = data.stock_status === 'out_of_stock' ? 'out-stock' :
-                          data.stock_status === 'low_stock'    ? 'low-stock' : 'in-stock';
-                statusEl.className = `stock-badge ${c}`;
-                statusEl.innerHTML = `<span class="stock-dot"></span> ${l}`;
-            }
-            showToast(`Stock ${currentStockType === 'in' ? 'added' : 'removed'} successfully.`, 'success');
-        } else { showToast(data.error || 'Something went wrong.', 'error'); }
-    }).catch(() => showToast('Network error.', 'error'));
+// ── Category picker - Selection inside input field ───────
+var catSearchTimers = {};
+
+function catSearch(prefix, query) {
+    clearTimeout(catSearchTimers[prefix]);
+    catSearchTimers[prefix] = setTimeout(function() { _catFetch(prefix, query); }, 250);
 }
 
-// ── Filters ───────────────────────────────────────────────────
+function _catFetch(prefix, query) {
+    var dropdown = document.getElementById(prefix + '_cat_dropdown');
+    var selectedId = document.getElementById(prefix + '_category_id').value;
+    var currentInputValue = document.getElementById(prefix + '_cat_search').value;
+
+    // Don't show dropdown if the input contains a selected category name that matches
+    if (selectedId && currentInputValue === query && query.length > 0) {
+        dropdown.classList.remove('open');
+        return;
+    }
+
+    fetch(URLS.category_search + '?q=' + encodeURIComponent(query))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var items = data.results;
+            var trimmed = query.trim();
+            var html = items.map(function(c) {
+                var sel = (String(selectedId) === String(c.pk)) ? 'selected' : '';
+                return '<div class="cat-option ' + sel + '" onclick="catSelect(\'' + prefix + '\',' + c.pk + ',\'' + c.name.replace(/'/g,"\\'") + '\')">' + c.name + '</div>';
+            }).join('');
+            
+            if (!items.length && !trimmed) {
+                html = '<div class="cat-empty">No categories found.</div>';
+            }
+            
+            var exactMatch = items.some(function(c) { 
+                return c.name.toLowerCase() === trimmed.toLowerCase(); 
+            });
+            
+            if (trimmed && !exactMatch) {
+                html += '<div class="cat-option-create" onclick="catCreate(\'' + prefix + '\',\'' + trimmed.replace(/'/g,"\\'") + '\')"><i class="fas fa-plus-circle"></i>Add "<strong>' + trimmed + '</strong>" as new category</div>';
+            }
+            
+            dropdown.innerHTML = html || '<div class="cat-empty">No categories yet.</div>';
+            dropdown.classList.add('open');
+        })
+        .catch(function() {
+            dropdown.innerHTML = '<div class="cat-empty">Search failed.</div>';
+            dropdown.classList.add('open');
+        });
+}
+
+function catSelect(prefix, pk, name) {
+    document.getElementById(prefix + '_category_id').value = pk;
+    var searchInput = document.getElementById(prefix + '_cat_search');
+    searchInput.value = name;  // Put selected category name IN the input
+    searchInput.placeholder = '';
+    document.getElementById(prefix + '_cat_dropdown').classList.remove('open');
+    document.getElementById(prefix + '_cat_clear').style.display = 'flex';
+}
+
+function catCreate(prefix, name) {
+    fetch(URLS.category_create, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name }),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.pk) {
+            catSelect(prefix, data.pk, data.name);
+            if (!data.existed) showToast('Category "' + data.name + '" created.', 'success');
+        } else {
+            showToast(data.error || 'Could not create category.', 'error');
+        }
+    })
+    .catch(function() { showToast('Network error.', 'error'); });
+}
+
+function catClear(prefix) {
+    document.getElementById(prefix + '_category_id').value = '';
+    var searchInput = document.getElementById(prefix + '_cat_search');
+    searchInput.value = '';
+    searchInput.placeholder = 'Search or type to add…';
+    document.getElementById(prefix + '_cat_clear').style.display = 'none';
+    document.getElementById(prefix + '_cat_dropdown').classList.remove('open');
+}
+
+function catSetValue(prefix, pk, name) {
+    if (pk && name) { 
+        catSelect(prefix, pk, name);
+    } else { 
+        catClear(prefix);
+    }
+}
+
+document.addEventListener('click', function(e) {
+    ['add','edit'].forEach(function(prefix) {
+        var picker = document.getElementById(prefix + '_cat_picker');
+        if (picker && !picker.contains(e.target)) {
+            document.getElementById(prefix + '_cat_dropdown').classList.remove('open');
+        }
+    });
+});
+
+// ── Filters ───────────────────────────────────────────────
 function applyFilter(param, value) {
-    const url = new URL(window.location.href);
-    value ? url.searchParams.set(param, value) : url.searchParams.delete(param);
+    var url = new URL(window.location.href);
+    if (value) { url.searchParams.set(param, value); } else { url.searchParams.delete(param); }
     url.searchParams.delete('page');
     window.location.href = url.toString();
 }
 function changePerPage(value) {
-    const url = new URL(window.location.href);
+    var url = new URL(window.location.href);
     url.searchParams.set('per_page', value);
     url.searchParams.delete('page');
     window.location.href = url.toString();
 }
-let searchTimer;
+var searchTimer;
 function debounceSearch(input) {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => document.getElementById('searchForm').submit(), 500);
+    searchTimer = setTimeout(function() { document.getElementById('searchForm').submit(); }, 500);
 }
 
-// ── Barcode Scanner ───────────────────────────────────────────
-let codeReader = null;
+// ── Barcode Scanner ───────────────────────────────────────
+var codeReader = null;
 function openScanner()  { openModal('scannerOverlay'); startCamera(); }
 function closeScanner() {
     stopCamera();
@@ -867,14 +827,12 @@ function startCamera() {
         document.getElementById('scannerStatus').className   = 'scanner-status error'; return;
     }
     codeReader = new ZXing.BrowserMultiFormatReader();
-    codeReader.listVideoInputDevices().then(devices => {
+    codeReader.listVideoInputDevices().then(function(devices) {
         if (!devices.length) throw new Error('No camera found.');
-        return codeReader.decodeFromVideoDevice(
-            devices[devices.length-1].deviceId,
+        return codeReader.decodeFromVideoDevice(devices[devices.length-1].deviceId,
             document.getElementById('scannerVideo'),
-            result => { if (result) handleScanResult(result.getText()); }
-        );
-    }).catch(err => {
+            function(result) { if (result) handleScanResult(result.getText()); });
+    }).catch(function(err) {
         document.getElementById('scannerStatus').textContent = 'Camera: ' + err.message;
         document.getElementById('scannerStatus').className   = 'scanner-status error';
     });
@@ -882,50 +840,55 @@ function startCamera() {
 function stopCamera() { if (codeReader) { codeReader.reset(); codeReader = null; } }
 function handleScanResult(barcode) {
     stopCamera();
-    document.getElementById('scannerStatus').textContent = `Scanning: ${barcode}…`;
+    document.getElementById('scannerStatus').textContent = 'Scanning: ' + barcode + '…';
     fetch(URLS.inventory_barcode + '?barcode=' + encodeURIComponent(barcode))
-        .then(r => r.json())
-        .then(data => {
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
             if (data.found) {
-                document.getElementById('scannerStatus').textContent = `✓ Found: ${data.medicine_name} (${data.stock_quantity} units)`;
+                document.getElementById('scannerStatus').textContent = '✓ Found: ' + data.medicine_name + ' (' + data.stock_quantity + ' units)';
                 document.getElementById('scannerStatus').className   = 'scanner-status found';
-                setTimeout(() => { closeScanner(); window.location.href = data.highlight_url; }, 1000);
+                setTimeout(function() { closeScanner(); window.location.href = data.highlight_url; }, 1000);
             } else {
-                document.getElementById('scannerStatus').textContent = `Barcode not found — opening Add form…`;
+                document.getElementById('scannerStatus').textContent = 'Barcode not found — opening Add form…';
                 document.getElementById('scannerStatus').className   = 'scanner-status notfound';
-                const bi = document.getElementById('add_barcode');
+                var bi = document.getElementById('add_barcode');
                 if (bi) bi.value = barcode;
-                setTimeout(() => { closeScanner(); openAddModal(); }, 1200);
+                setTimeout(function() { closeScanner(); openAddModal(); }, 1200);
             }
         })
-        .catch(() => {
+        .catch(function() {
             document.getElementById('scannerStatus').textContent = 'Lookup failed.';
             document.getElementById('scannerStatus').className   = 'scanner-status error';
         });
 }
 function lookupBarcode() {
-    const val = document.getElementById('manualBarcode').value.trim();
+    var val = document.getElementById('manualBarcode').value.trim();
     if (val) handleScanResult(val);
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeScanner(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeScanner(); });
 
-// ── Scroll to highlighted row ─────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-    const h = document.querySelector('.highlight-row');
-    if (h) setTimeout(() => h.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+// ── Highlight scroll + auto-expand batch ──────────────────
+document.addEventListener('DOMContentLoaded', function() {
+    var h = document.querySelector('.highlight-row');
+    if (h) {
+        setTimeout(function() { h.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 300);
+        var pk = h.id.replace('row-', '');
+        if (pk) setTimeout(function() { toggleBatches(pk); }, 700);
+    }
 });
 
-// ── Toast ─────────────────────────────────────────────────────
-function showToast(msg, type = 'success') {
-    const toast = document.getElementById('toast');
+// ── Toast ─────────────────────────────────────────────────
+function showToast(msg, type) {
+    type = type || 'success';
+    var toast = document.getElementById('toast');
     toast.querySelector('i').className = type === 'success' ? 'fas fa-circle-check' : 'fas fa-circle-xmark';
     document.getElementById('toastMsg').textContent = msg;
-    toast.className = `toast ${type}`;
+    toast.className = 'toast ' + type;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3200);
+    setTimeout(function() { toast.classList.remove('show'); }, 3200);
 }
 {% if messages %}{% for message in messages %}
-    showToast("{{ message|escapejs }}", "{% if 'error' in message.tags %}error{% else %}success{% endif %}");
+    showToast("{{ message }}", "{% if 'error' in message.tags %}error{% else %}success{% endif %}");
 {% endfor %}{% endif %}
 </script>
 {% endblock %}

@@ -2,6 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models import Sum
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -73,7 +74,8 @@ class MedicineCategory(models.Model):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# MEDICINE
+# MEDICINE  (product-level — one row per drug product)
+# batch_number / expiry_date / purchase_price moved to MedicineStock
 # ─────────────────────────────────────────────────────────────────────────────
 class Medicine(models.Model):
 
@@ -106,11 +108,7 @@ class Medicine(models.Model):
                            Supplier, on_delete=models.SET_NULL,
                            null=True, blank=True, related_name='medicines')
     barcode          = models.CharField(max_length=100, blank=True, unique=True, null=True)
-    batch_number     = models.CharField(max_length=100, blank=True)
-    expiry_date      = models.DateField(null=True, blank=True)
-    purchase_price   = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     selling_price    = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    stock_quantity   = models.PositiveIntegerField(default=0)
     reorder_level    = models.PositiveIntegerField(default=10)
     storage_location = models.CharField(max_length=150, blank=True)
     is_active        = models.BooleanField(default=True)
@@ -123,6 +121,12 @@ class Medicine(models.Model):
     def __str__(self):
         return f"{self.medicine_name} {self.strength}"
 
+    # ── Aggregated stock across all batches ───────────────────
+    @property
+    def stock_quantity(self):
+        result = self.batches.filter(quantity__gt=0).aggregate(total=Sum('quantity'))
+        return result['total'] or 0
+
     @property
     def is_out_of_stock(self):
         return self.stock_quantity == 0
@@ -133,15 +137,31 @@ class Medicine(models.Model):
 
     @property
     def is_expiring_soon(self):
-        if not self.expiry_date:
-            return False
-        return self.expiry_date <= (timezone.now().date() + timezone.timedelta(days=90))
+        """True if the earliest-expiring active batch expires within 90 days."""
+        threshold = timezone.now().date() + timezone.timedelta(days=90)
+        return self.batches.filter(
+            quantity__gt=0,
+            expiry_date__isnull=False,
+            expiry_date__lte=threshold,
+            expiry_date__gte=timezone.now().date(),
+        ).exists()
 
     @property
     def is_expired(self):
-        if not self.expiry_date:
-            return False
-        return self.expiry_date < timezone.now().date()
+        """True if any active batch is expired."""
+        return self.batches.filter(
+            quantity__gt=0,
+            expiry_date__isnull=False,
+            expiry_date__lt=timezone.now().date(),
+        ).exists()
+
+    @property
+    def earliest_expiry(self):
+        """The soonest expiry date among active batches, or None."""
+        batch = self.batches.filter(
+            quantity__gt=0, expiry_date__isnull=False
+        ).order_by('expiry_date').first()
+        return batch.expiry_date if batch else None
 
     @property
     def stock_status(self):
@@ -151,13 +171,69 @@ class Medicine(models.Model):
             return 'low_stock'
         return 'in_stock'
 
+    # Legacy shim so old code that reads medicine.purchase_price still works
+    @property
+    def purchase_price(self):
+        batch = self.batches.filter(quantity__gt=0).order_by('expiry_date').first()
+        return batch.purchase_price if batch else 0
+
     class Meta:
         ordering = ['medicine_name']
         verbose_name_plural = 'Medicines'
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STOCK MOVEMENT
+# MEDICINE STOCK  (batch-level — one row per delivery / batch)
+# ─────────────────────────────────────────────────────────────────────────────
+class MedicineStock(models.Model):
+    """
+    Each row represents one physical batch of a medicine.
+    When stock is received (Stock In), a new MedicineStock row is created
+    (or an existing matching batch is updated).
+    Dispensing and Stock Out deduct from batches in FEFO order
+    (earliest expiry first).
+    """
+    medicine       = models.ForeignKey(
+                         Medicine, on_delete=models.CASCADE, related_name='batches')
+    batch_number   = models.CharField(max_length=100, blank=True)
+    expiry_date    = models.DateField(null=True, blank=True)
+    quantity       = models.PositiveIntegerField(default=0)
+    purchase_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    supplier       = models.ForeignKey(
+                         Supplier, on_delete=models.SET_NULL,
+                         null=True, blank=True, related_name='batches')
+    received_at    = models.DateTimeField(auto_now_add=True)
+    created_by     = models.ForeignKey(
+                         User, on_delete=models.SET_NULL,
+                         null=True, blank=True)
+
+    def __str__(self):
+        exp = str(self.expiry_date) if self.expiry_date else 'no expiry'
+        return (f"{self.medicine.medicine_name} | "
+                f"Batch {self.batch_number or '—'} | "
+                f"Exp {exp} | Qty {self.quantity}")
+
+    @property
+    def is_expired(self):
+        if not self.expiry_date:
+            return False
+        return self.expiry_date < timezone.now().date()
+
+    @property
+    def is_expiring_soon(self):
+        if not self.expiry_date:
+            return False
+        threshold = timezone.now().date() + timezone.timedelta(days=90)
+        return timezone.now().date() <= self.expiry_date <= threshold
+
+    class Meta:
+        ordering = ['expiry_date', 'received_at']   # FEFO default
+        verbose_name        = 'Medicine Stock (Batch)'
+        verbose_name_plural = 'Medicine Stock (Batches)'
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# STOCK MOVEMENT  (audit log — unchanged)
 # ─────────────────────────────────────────────────────────────────────────────
 class StockMovement(models.Model):
 
@@ -173,10 +249,14 @@ class StockMovement(models.Model):
 
     medicine        = models.ForeignKey(
                           Medicine, on_delete=models.CASCADE, related_name='movements')
+    # Optional link to the specific batch this movement touched
+    batch           = models.ForeignKey(
+                          MedicineStock, on_delete=models.SET_NULL,
+                          null=True, blank=True, related_name='movements')
     movement_type   = models.CharField(max_length=20, choices=MOVEMENT_TYPES)
     quantity        = models.IntegerField()
-    quantity_before = models.PositiveIntegerField()
-    quantity_after  = models.PositiveIntegerField()
+    quantity_before = models.PositiveIntegerField()   # total across all batches before
+    quantity_after  = models.PositiveIntegerField()   # total across all batches after
     supplier        = models.ForeignKey(
                           Supplier, on_delete=models.SET_NULL,
                           null=True, blank=True)
@@ -214,11 +294,6 @@ class StockMovement(models.Model):
 # DISPENSING  (transaction header)
 # ─────────────────────────────────────────────────────────────────────────────
 class Dispensing(models.Model):
-    """
-    One record per dispensing transaction (the receipt).
-    Each transaction can have multiple DispensingItem rows.
-    Stock is deducted via StockMovement('out') — no conflict with stock management.
-    """
     customer_name   = models.CharField(max_length=200, blank=True)
     prescription_no = models.CharField(max_length=100, blank=True)
     notes           = models.TextField(blank=True)
@@ -240,19 +315,15 @@ class Dispensing(models.Model):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DISPENSING ITEM  (one per medicine line in a transaction)
+# DISPENSING ITEM  (line item per medicine in a transaction)
 # ─────────────────────────────────────────────────────────────────────────────
 class DispensingItem(models.Model):
-    """
-    Individual line item inside a Dispensing transaction.
-    unit_price is snapshotted at time of sale so price changes don't affect history.
-    """
     dispensing  = models.ForeignKey(
                       Dispensing, on_delete=models.CASCADE, related_name='items')
     medicine    = models.ForeignKey(
                       Medicine, on_delete=models.PROTECT, related_name='dispensing_items')
     quantity    = models.PositiveIntegerField()
-    unit_price  = models.DecimalField(max_digits=10, decimal_places=2)   # snapshot
+    unit_price  = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal    = models.DecimalField(max_digits=12, decimal_places=2)
 
     def save(self, *args, **kwargs):
@@ -260,8 +331,7 @@ class DispensingItem(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return (f"{self.medicine.medicine_name} x{self.quantity} "
-                f"@ ₱{self.unit_price}")
+        return f"{self.medicine.medicine_name} x{self.quantity} @ ₱{self.unit_price}"
 
     class Meta:
         verbose_name        = 'Dispensing Item'
