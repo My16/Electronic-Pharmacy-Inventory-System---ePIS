@@ -29,7 +29,9 @@ urlpatterns = [
     path('stock/in/',            views.stock_in_view,         name='stock_in'),
     path('stock/out/',           views.stock_out_view,        name='stock_out'),
     path('stock/adjust/',        views.stock_adjust_view,     name='stock_adjust'),
-    path('stock/medicine-info/', views.stock_medicine_info,   name='stock_medicine_info'),
+    path('stock/medicine-info/',        views.stock_medicine_info, name='stock_medicine_info'),
+    path('stock/batch/edit/<int:pk>/',  views.batch_edit_view,     name='batch_edit'),
+    path('stock/batch/delete/<int:pk>/',views.batch_delete_view,   name='batch_delete'),
 
     # ── Dispensing / Sales ────────────────────────────────────────────────────
     path('dispensing/',                  views.dispensing_view,    name='dispensing'),

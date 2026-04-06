@@ -50,6 +50,14 @@
 .med-picker-empty{padding:14px;text-align:center;font-size:12.5px;color:#94a3b8}
 .med-picker-hidden{display:none}
 
+/* ── Form Scanner Bar ───────────────────────────────────── */
+.form-scanner-bar{display:none;position:relative;margin-top:8px;padding:8px 11px;border:1px solid #e0e6ed;border-radius:8px;background:#f8fafc}
+.form-scanner-bar.open{display:flex;align-items:center;gap:8px}
+.form-scanner-bar i{color:#00ADB5}
+.form-scanner-bar input{flex:1;border:none;background:transparent;font-size:13px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none}
+.form-scanner-close{width:24px;height:24px;border-radius:6px;border:none;background:#f0f4f8;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:background .2s,color .2s}
+.form-scanner-close:hover{background:#e0e6ed;color:#1a2433}
+
 /* ── Medicine info card ─────────────────────────────── */
 .med-info-card{display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:9px;padding:12px 14px;margin-bottom:14px;font-size:12.5px}
 .med-info-card.show{display:block}
@@ -64,8 +72,8 @@
 .batch-list{margin-top:10px;border-top:1px solid #bae6fd;padding-top:10px}
 .batch-list-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0369a1;margin-bottom:6px;display:flex;align-items:center;gap:5px}
 .batch-list-title i{font-size:9px}
-.batch-item{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-radius:6px;margin-bottom:4px;border:1px solid #e0f2fe;background:#fff;font-size:12px;cursor:pointer;transition:background .15s,border-color .15s}
-.batch-item:hover{background:#e0f2fe}
+.batch-item{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:7px;margin-bottom:5px;border:1px solid #e0f2fe;background:#fff;font-size:12px;transition:background .15s,border-color .15s}
+.batch-item:hover{background:#f0f9ff}
 .batch-item.selected{background:#0284c7;border-color:#0284c7;color:#fff}
 .batch-item.selected .bi-expiry,.batch-item.selected .bi-qty{color:#fff}
 .bi-batch{font-weight:600;font-size:11.5px}
@@ -75,6 +83,14 @@
 .fefo-chip{display:inline-flex;align-items:center;gap:3px;background:rgba(22,163,74,.15);color:#16a34a;border-radius:20px;padding:1px 6px;font-size:9px;font-weight:700;margin-left:4px}
 .expired-chip{background:rgba(220,38,38,.12);color:#dc2626}
 .expiring-chip{background:rgba(217,119,6,.12);color:#d97706}
+
+/* ── Batch action buttons ───────────────────────────── */
+.batch-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:6px}
+.btn-batch-action{width:26px;height:26px;border-radius:6px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:background .15s;flex-shrink:0}
+.btn-batch-action.edit-batch{background:rgba(0,173,181,.12);color:#00ADB5}
+.btn-batch-action.edit-batch:hover{background:rgba(0,173,181,.25)}
+.btn-batch-action.del-batch{background:rgba(239,68,68,.1);color:#dc2626}
+.btn-batch-action.del-batch:hover{background:rgba(239,68,68,.22)}
 
 /* ── Form elements ─────────────────────────────────── */
 .form-group{margin-bottom:13px}
@@ -87,7 +103,6 @@ textarea.form-control{resize:vertical;min-height:70px}
 .form-divider{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#00ADB5;margin:14px 0 10px;padding-bottom:6px;border-bottom:1px solid #f0f4f8}
 .info-note{display:flex;align-items:flex-start;gap:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:8px 12px;font-size:11.5px;color:#92400e;margin-bottom:12px}
 .info-note i{color:#d97706;flex-shrink:0;margin-top:1px}
-
 .btn-stock-in{width:100%;padding:10px;border:none;border-radius:9px;background:#16a34a;color:#fff;font-size:13.5px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s;box-shadow:0 2px 8px rgba(22,163,74,.25);display:flex;align-items:center;justify-content:center;gap:7px}
 .btn-stock-in:hover{background:#15803d}
 .btn-stock-out{width:100%;padding:10px;border:none;border-radius:9px;background:#dc2626;color:#fff;font-size:13.5px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:background .2s;box-shadow:0 2px 8px rgba(220,38,38,.25);display:flex;align-items:center;justify-content:center;gap:7px}
@@ -110,19 +125,16 @@ textarea.form-control{resize:vertical;min-height:70px}
 .btn-filter{padding:6px 14px;border-radius:7px;border:none;background:#00ADB5;color:#fff;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer}
 .btn-filter:hover{background:#008C9E}
 .btn-clear{padding:6px 10px;border-radius:7px;border:1px solid #e0e6ed;background:#fff;color:#dc2626;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;text-decoration:none}
-
 .data-table{width:100%;border-collapse:collapse}
 .data-table thead th{background:#f8fafc;padding:10px 14px;text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#78909c;border-bottom:1px solid #eef2f7;white-space:nowrap}
 .data-table tbody tr{border-bottom:1px solid #f4f7fb;transition:background .15s}
 .data-table tbody tr:last-child{border-bottom:none}.data-table tbody tr:hover{background:#f8fafc}
 .data-table td{padding:11px 14px;font-size:12.5px;color:#1a2433;vertical-align:middle}
-
 .move-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
 .move-badge.in{background:rgba(34,197,94,.1);color:#16a34a}.move-badge.out{background:rgba(239,68,68,.1);color:#dc2626}
 .move-badge.adjust{background:rgba(59,130,246,.1);color:#2563eb}.move-badge.return{background:rgba(139,92,246,.1);color:#7c3aed}
 .move-badge.expired{background:rgba(245,158,11,.1);color:#d97706}.move-badge.damaged{background:rgba(107,114,128,.1);color:#6b7280}
 .move-badge.audit{background:rgba(20,184,166,.1);color:#0f766e}
-
 .qty-cell{font-weight:700;font-size:13px}
 .qty-cell.positive{color:#16a34a}.qty-cell.negative{color:#dc2626}.qty-cell.neutral{color:#2563eb}
 .med-name-cell{font-weight:600;color:#1a2433;font-size:12.5px}.med-sub-cell{font-size:11px;color:#94a3b8;margin-top:1px}
@@ -139,12 +151,33 @@ textarea.form-control{resize:vertical;min-height:70px}
 .page-btn{width:32px;height:32px;border-radius:8px;border:1px solid #e0e6ed;background:#fff;color:#64748b;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .15s,border-color .15s}
 .page-btn:hover{background:#f0f4f8;border-color:#cdd5df}.page-btn.active{background:#00ADB5;border-color:#00ADB5;color:#fff}.page-btn.disabled{opacity:.4;pointer-events:none}
 
-/* ── Inline scanner bar ─────────────────────────────── */
-.form-scanner-bar{display:none;align-items:center;gap:8px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12.5px;color:#0369a1;font-weight:500}
-.form-scanner-bar.show{display:flex}.form-scanner-bar i{font-size:15px}
-.form-scanner-bar input{flex:1;border:none;background:transparent;font-size:13px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none}
-.form-scanner-close{border:none;background:transparent;cursor:pointer;color:#94a3b8;font-size:13px;padding:0}
-.form-scanner-close:hover{color:#dc2626}
+/* ── Modals ────────────────────────────────────────── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(13,27,42,.55);backdrop-filter:blur(4px);z-index:2000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+@keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-box{background:#fff;border-radius:16px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:modalIn .25s cubic-bezier(.34,1.56,.64,1) both;overflow:hidden}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f0f4f8}
+.modal-title{font-size:14px;font-weight:700;color:#1a2433;display:flex;align-items:center;gap:8px}
+.modal-title i{color:#00ADB5}
+.modal-close{width:28px;height:28px;border-radius:7px;border:none;background:#f0f4f8;color:#78909c;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px}
+.modal-close:hover{background:#e0e6ed;color:#1a2433}
+.modal-body{padding:18px 20px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;border-top:1px solid #f0f4f8;background:#fafbfc}
+.modal-form-group{margin-bottom:12px}
+.modal-label{display:block;font-size:11.5px;font-weight:600;color:#64748b;margin-bottom:4px}
+.modal-input{width:100%;padding:8px 11px;border:1px solid #e0e6ed;border-radius:8px;font-size:13px;font-family:'Poppins',sans-serif;color:#1a2433;outline:none;background:#f8fafc;transition:border-color .2s;box-sizing:border-box}
+.modal-input:focus{border-color:#00ADB5;box-shadow:0 0 0 3px rgba(0,173,181,.1);background:#fff}
+.btn-modal-save{padding:8px 20px;border-radius:8px;border:none;background:#00ADB5;color:#fff;font-size:12.5px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer}
+.btn-modal-save:hover{background:#008C9E}
+.btn-modal-cancel{padding:8px 16px;border-radius:8px;border:1px solid #e0e6ed;background:#fff;color:#64748b;font-size:12.5px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer}
+.btn-modal-cancel:hover{background:#f0f4f8}
+.btn-modal-danger{padding:8px 20px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:12.5px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer}
+.btn-modal-danger:hover{background:#b91c1c}
+
+/* Delete confirm */
+.delete-icon-wrap{width:52px;height:52px;border-radius:50%;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px;color:#dc2626}
+.delete-confirm-title{font-size:15px;font-weight:700;color:#1a2433;text-align:center;margin-bottom:6px}
+.delete-confirm-msg{font-size:12.5px;color:#78909c;text-align:center;line-height:1.5;margin-bottom:14px}
 
 /* ── Toast ─────────────────────────────────────────── */
 .toast{position:fixed;bottom:26px;right:26px;background:#1a2433;color:#fff;padding:11px 16px;border-radius:10px;font-size:12.5px;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:9999;transform:translateY(70px);opacity:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;pointer-events:none;max-width:360px}
@@ -179,7 +212,6 @@ textarea.form-control{resize:vertical;min-height:70px}
                 <form method="POST" action="{% url 'stock_in' %}" id="form-in">
                     {% csrf_token %}
                     <input type="hidden" name="medicine" id="in_medicine_id" class="med-picker-hidden">
-
                     {% include 'partials/_med_picker.html' with tab='in' %}
 
                     <div class="med-info-card" id="in_info_card">
@@ -188,6 +220,11 @@ textarea.form-control{resize:vertical;min-height:70px}
                             <div class="med-info-item"><span class="med-info-item-label">Current Total Stock</span><span class="med-info-item-value" id="in_info_stock">—</span></div>
                             <div class="med-info-item"><span class="med-info-item-label">Dosage</span><span class="med-info-item-value" id="in_info_dosage">—</span></div>
                             <div class="med-info-item"><span class="med-info-item-label">Active Batches</span><span class="med-info-item-value" id="in_info_batches">—</span></div>
+                        </div>
+                        <!-- Batch list with edit/delete for Stock In tab -->
+                        <div class="batch-list" id="in_batch_list" style="display:none;">
+                            <div class="batch-list-title"><i class="fas fa-layer-group"></i>Existing Batches</div>
+                            <div id="in_batch_items"></div>
                         </div>
                     </div>
 
@@ -216,7 +253,6 @@ textarea.form-control{resize:vertical;min-height:70px}
                 <form method="POST" action="{% url 'stock_out' %}" id="form-out">
                     {% csrf_token %}
                     <input type="hidden" name="medicine" id="out_medicine_id" class="med-picker-hidden">
-
                     {% include 'partials/_med_picker.html' with tab='out' %}
 
                     <div class="med-info-card" id="out_info_card">
@@ -225,15 +261,13 @@ textarea.form-control{resize:vertical;min-height:70px}
                             <div class="med-info-item"><span class="med-info-item-label">Available Stock</span><span class="med-info-item-value" id="out_info_stock">—</span></div>
                             <div class="med-info-item"><span class="med-info-item-label">Dosage</span><span class="med-info-item-value" id="out_info_dosage">—</span></div>
                         </div>
-
-                        <!-- FEFO Batch list -->
                         <div class="batch-list" id="out_batch_list" style="display:none;">
-                            <div class="batch-list-title"><i class="fas fa-layer-group"></i>Available Batches — FEFO Order (system will deduct oldest first)</div>
+                            <div class="batch-list-title"><i class="fas fa-layer-group"></i>Available Batches — FEFO Order (system deducts oldest first)</div>
                             <div id="out_batch_items"></div>
                         </div>
                     </div>
 
-                    <div class="info-note"><i class="fas fa-star" style="color:#d97706"></i><span><strong>FEFO Auto-deduction:</strong> The system automatically deducts from the oldest expiry batch first.</span></div>
+                    <div class="info-note"><i class="fas fa-star" style="color:#d97706"></i><span><strong>FEFO Auto-deduction:</strong> System automatically deducts from the oldest expiry batch first.</span></div>
 
                     <div class="form-group"><label class="form-label">Transaction Type *</label><select name="movement_type" class="form-control" onchange="toggleOutFields(this.value)"><option value="out">Dispensing (Patient)</option><option value="expired">Expired Removal</option><option value="damaged">Damaged / Disposal</option></select></div>
                     <div class="form-group"><label class="form-label">Quantity *</label><input type="number" name="quantity" id="out_qty" class="form-control" min="1" value="1" required oninput="updateFefoPreview()"></div>
@@ -257,7 +291,6 @@ textarea.form-control{resize:vertical;min-height:70px}
                     {% csrf_token %}
                     <input type="hidden" name="medicine"  id="adj_medicine_id" class="med-picker-hidden">
                     <input type="hidden" name="batch_id"  id="adj_batch_id">
-
                     {% include 'partials/_med_picker.html' with tab='adj' %}
 
                     <div class="med-info-card" id="adj_info_card">
@@ -266,10 +299,8 @@ textarea.form-control{resize:vertical;min-height:70px}
                             <div class="med-info-item"><span class="med-info-item-label">Total Stock</span><span class="med-info-item-value" id="adj_info_stock">—</span></div>
                             <div class="med-info-item"><span class="med-info-item-label">Dosage</span><span class="med-info-item-value" id="adj_info_dosage">—</span></div>
                         </div>
-
-                        <!-- Batch selector for adjust -->
                         <div class="batch-list" id="adj_batch_list" style="display:none;">
-                            <div class="batch-list-title"><i class="fas fa-layer-group"></i>Select Batch to Adjust <span style="font-weight:400;color:#64748b">(or leave blank for auto FEFO)</span></div>
+                            <div class="batch-list-title"><i class="fas fa-layer-group"></i>Select Batch to Adjust <span style="font-weight:400;color:#64748b">(leave blank for FEFO auto)</span></div>
                             <div id="adj_batch_items"></div>
                         </div>
                     </div>
@@ -278,7 +309,7 @@ textarea.form-control{resize:vertical;min-height:70px}
                     <div class="form-group">
                         <label class="form-label">New Total Quantity *</label>
                         <input type="number" name="new_quantity" id="adj_new_qty" class="form-control" min="0" value="0" required oninput="calcDiff()">
-                        <small style="font-size:11px;color:#94a3b8;margin-top:3px;display:block">Set the correct total count across all batches. Difference is applied to the selected (or FEFO) batch.</small>
+                        <small style="font-size:11px;color:#94a3b8;margin-top:3px;display:block">Set the correct total count. Difference applied to selected (or FEFO) batch.</small>
                         <small id="adj_diff_label" style="font-size:11.5px;font-weight:600;margin-top:2px;display:none"></small>
                     </div>
                     <div class="form-group"><label class="form-label">Reference No.</label><input type="text" name="reference_no" class="form-control" placeholder="Audit no. or reference"></div>
@@ -397,6 +428,65 @@ textarea.form-control{resize:vertical;min-height:70px}
 
 </div>
 
+<!-- ── BATCH EDIT MODAL ──────────────────────────────────── -->
+<div class="modal-overlay" id="batchEditModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fas fa-pen-to-square"></i>Edit Batch Details</div>
+            <button class="modal-close" onclick="closeBatchModal('edit')"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p style="font-size:12px;color:#78909c;margin:0 0 14px;">Editing batch <strong id="editBatchLabel" style="color:#1a2433;font-family:monospace;"></strong>. Quantity changes must go through Stock In or Adjust.</p>
+            <div class="modal-form-group">
+                <label class="modal-label">Batch Number</label>
+                <input type="text" id="editBatchNumber" class="modal-input" placeholder="e.g. BT-2024-001">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">Expiry Date</label>
+                <input type="date" id="editBatchExpiry" class="modal-input">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">Purchase Price / unit (₱)</label>
+                <input type="number" id="editBatchPrice" class="modal-input" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="modal-form-group">
+                <label class="modal-label">Supplier</label>
+                <select id="editBatchSupplier" class="modal-input">
+                    <option value="">— No change —</option>
+                    {% for s in suppliers %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeBatchModal('edit')">Cancel</button>
+            <button class="btn-modal-save" onclick="submitBatchEdit()"><i class="fas fa-floppy-disk" style="margin-right:5px"></i>Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── BATCH DELETE CONFIRM MODAL ───────────────────────── -->
+<div class="modal-overlay" id="batchDeleteModal">
+    <div class="modal-box" style="max-width:380px">
+        <div class="modal-body" style="padding:24px 22px 8px">
+            <div class="delete-icon-wrap"><i class="fas fa-trash-can"></i></div>
+            <div class="delete-confirm-title">Remove Batch</div>
+            <p class="delete-confirm-msg">
+                This will zero out batch <strong id="deleteBatchLabel" style="font-family:monospace;"></strong>
+                (<strong id="deleteBatchQty"></strong> units) and log an adjustment.
+                The batch record and audit history are preserved.
+            </p>
+            <div class="modal-form-group">
+                <label class="modal-label">Reason <span style="color:#94a3b8;font-weight:400">(optional)</span></label>
+                <input type="text" id="deleteBatchReason" class="modal-input" placeholder="e.g. Returned to supplier, data entry error…">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-cancel" onclick="closeBatchModal('delete')">Cancel</button>
+            <button class="btn-modal-danger" onclick="submitBatchDelete()"><i class="fas fa-trash-can" style="margin-right:5px"></i>Yes, Remove Batch</button>
+        </div>
+    </div>
+</div>
+
 <div class="toast" id="toast"><i class="fas fa-circle-check"></i><span id="toastMsg"></span></div>
 {% endblock %}
 
@@ -406,6 +496,9 @@ textarea.form-control{resize:vertical;min-height:70px}
 <script>
 const MEDICINE_SEARCH_URL = "{% url 'medicine_search_ajax' %}";
 const MEDICINE_INFO_URL   = "{% url 'stock_medicine_info' %}";
+const BATCH_EDIT_URL      = "{% url 'batch_edit' pk=0 %}".replace('/0/', '/');
+const BATCH_DELETE_URL    = "{% url 'batch_delete' pk=0 %}".replace('/0/', '/');
+const CSRF                = '{{ csrf_token }}';
 
 // ── Tabs ──────────────────────────────────────────────────
 function switchTab(tab) {
@@ -415,9 +508,9 @@ function switchTab(tab) {
     document.getElementById(`pane-${tab}`).classList.add('active');
 }
 
-// ── Searchable Medicine Picker ────────────────────────────
-let searchTimers = {};
-let currentStockData = {};   // stores full medicine data per tab
+// ── Medicine Picker ───────────────────────────────────────
+let searchTimers    = {};
+let currentStockData = {};
 
 function initPicker(tab) {
     const input    = document.getElementById(`${tab}_search_input`);
@@ -447,13 +540,12 @@ function searchMedicines(tab, q) {
                 return;
             }
             dropdown.innerHTML = data.results.map(m => {
-                const stockClass = m.stock_status === 'out_of_stock' ? 'stock-out' :
-                                   m.stock_status === 'low_stock'    ? 'stock-low' : 'stock-ok';
-                return `<div class="med-option"
-                            data-pk="${m.pk}"
+                const sc = m.stock_status === 'out_of_stock' ? 'stock-out' :
+                           m.stock_status === 'low_stock'    ? 'stock-low' : 'stock-ok';
+                return `<div class="med-option" data-pk="${m.pk}"
                             data-json="${encodeURIComponent(JSON.stringify(m))}"
-                            onclick="selectMedicineFromEl('${tab}', this)">
-                    <span class="med-option-stock ${stockClass}">${m.stock_quantity} units</span>
+                            onclick="selectMedicineFromEl('${tab}',this)">
+                    <span class="med-option-stock ${sc}">${m.stock_quantity} units</span>
                     <div class="med-option-name">${escHtml(m.medicine_name)} <span style="color:#94a3b8;font-weight:400">${escHtml(m.strength)}</span></div>
                     <div class="med-option-sub">${escHtml(m.label)}</div>
                 </div>`;
@@ -468,8 +560,7 @@ function escHtml(str) {
 }
 
 function selectMedicineFromEl(tab, el) {
-    const med = JSON.parse(decodeURIComponent(el.dataset.json));
-    selectMedicine(tab, med);
+    selectMedicine(tab, JSON.parse(decodeURIComponent(el.dataset.json)));
 }
 
 function selectMedicine(tab, med) {
@@ -479,12 +570,11 @@ function selectMedicine(tab, med) {
     currentStockData[tab] = med;
     updateInfoCard(tab, med);
 
-    // Fetch full batch data from medicine_info endpoint
     fetch(MEDICINE_INFO_URL + '?pk=' + med.pk)
         .then(r => r.json())
         .then(data => {
             if (data.found) {
-                currentStockData[tab] = {...med, ...data};
+                currentStockData[tab] = { ...med, ...data };
                 renderBatchList(tab, data.batches || []);
                 if (tab === 'adj') {
                     document.getElementById('adj_new_qty').value = data.stock_quantity;
@@ -493,7 +583,6 @@ function selectMedicine(tab, med) {
             }
         });
 
-    // Pre-fill Stock In fields
     if (tab === 'in') {
         const supEl = document.getElementById('in_supplier_sel');
         if (supEl && med.supplier_id) supEl.value = med.supplier_id;
@@ -509,9 +598,9 @@ function updateInfoCard(tab, med) {
     const stockEl = document.getElementById(`${tab}_info_stock`);
     if (stockEl) {
         stockEl.textContent = `${med.stock_quantity} units`;
-        stockEl.className   = 'med-info-item-value ' +
-            (med.stock_status === 'out_of_stock' ? 'red' :
-             med.stock_status === 'low_stock'    ? 'orange' : 'green');
+        stockEl.className   = 'med-info-item-value ' + (
+            med.stock_status === 'out_of_stock' ? 'red' :
+            med.stock_status === 'low_stock'    ? 'orange' : 'green');
     }
     const dosageEl = document.getElementById(`${tab}_info_dosage`);
     if (dosageEl) dosageEl.textContent = med.dosage_form;
@@ -522,13 +611,14 @@ function updateInfoCard(tab, med) {
     card.classList.add('show');
 }
 
-// ── Render batch list (Stock Out & Adjust) ────────────────
+// ── Render batch list with edit/delete buttons ────────────
 function renderBatchList(tab, batches) {
+    // Update batch count for Stock In tab header
     if (tab === 'in') {
         const bEl = document.getElementById('in_info_batches');
-        if (bEl) bEl.textContent = batches.length + ' batches';
-        return;
+        if (bEl) bEl.textContent = batches.length + ' batch' + (batches.length !== 1 ? 'es' : '');
     }
+
     const listWrap  = document.getElementById(`${tab}_batch_list`);
     const itemsWrap = document.getElementById(`${tab}_batch_items`);
     if (!listWrap || !itemsWrap) return;
@@ -539,79 +629,174 @@ function renderBatchList(tab, batches) {
     itemsWrap.innerHTML = batches.map((b, idx) => {
         const isExpired  = b.is_expired;
         const isExpiring = b.is_expiring;
-        let   chip       = idx === 0 ? '<span class="fefo-chip"><i class="fas fa-star"></i>FEFO 1st</span>' : '';
+        let chip = (idx === 0 && !isExpired)
+            ? '<span class="fefo-chip"><i class="fas fa-star"></i>FEFO 1st</span>' : '';
         if (isExpired)  chip += '<span class="fefo-chip expired-chip">Expired</span>';
         if (isExpiring) chip += '<span class="fefo-chip expiring-chip">Expiring</span>';
-        const expiryTxt = b.expiry_date ? b.expiry_date : 'No expiry';
-        return `<div class="batch-item" data-batch-pk="${b.pk}" data-batch-qty="${b.quantity}" onclick="selectBatch('${tab}', this)">
-            <div>
-                <span class="bi-batch">${b.batch_number || 'No batch no.'}</span> ${chip}
-                <div class="bi-expiry">Exp: ${expiryTxt} · ₱${b.purchase_price}/unit</div>
+        const expiryTxt = b.expiry_date || 'No expiry';
+
+        // Batch item is clickable for adj tab (batch selection)
+        const clickHandler = tab === 'adj'
+            ? `onclick="selectBatch('${tab}',this)"`
+            : '';
+
+        // Encode batch data safely for the edit modal
+        const safeJson = encodeURIComponent(JSON.stringify(b));
+
+        return `<div class="batch-item" data-batch-pk="${b.pk}" data-batch-qty="${b.quantity}"
+                    data-batch-json="${safeJson}" ${clickHandler}>
+            <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;">
+                    <span class="bi-batch">${escHtml(b.batch_number || 'No batch no.')}</span>
+                    ${chip}
+                </div>
+                <div class="bi-expiry">Exp: ${escHtml(expiryTxt)} · ₱${b.purchase_price}/unit</div>
             </div>
-            <span class="bi-qty">${b.quantity} units</span>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                <span class="bi-qty">${b.quantity} units</span>
+                <div class="batch-actions" onclick="event.stopPropagation()">
+                    <button class="btn-batch-action edit-batch" title="Edit batch details"
+                            onclick="openBatchEdit(${b.pk}, '${safeJson}')">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button class="btn-batch-action del-batch" title="Remove batch (zero out)"
+                            onclick="openBatchDelete(${b.pk}, '${escHtml(b.batch_number || 'Batch ' + b.pk)}', ${b.quantity})">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
         </div>`;
     }).join('');
 }
 
 function selectBatch(tab, el) {
-    if (tab !== 'adj') return;  // only adj lets user pick a batch
+    if (tab !== 'adj') return;
+    const wasSelected = el.classList.contains('selected');
     document.querySelectorAll(`#adj_batch_items .batch-item`).forEach(b => b.classList.remove('selected'));
-    el.classList.toggle('selected');
-    if (el.classList.contains('selected')) {
+    if (!wasSelected) {
+        el.classList.add('selected');
         document.getElementById('adj_batch_id').value = el.dataset.batchPk;
     } else {
         document.getElementById('adj_batch_id').value = '';
     }
 }
 
-// Update FEFO preview qty breakdown on Stock Out
-function updateFefoPreview() {
-    // Just a visual helper — actual FEFO is done server-side
-    // Could be extended to show which batches will be touched
+function updateFefoPreview() { /* FEFO done server-side */ }
+
+// ── Batch Edit Modal ──────────────────────────────────────
+let editingBatchPk = null;
+
+function openBatchEdit(pk, safeJson) {
+    editingBatchPk = pk;
+    const b = JSON.parse(decodeURIComponent(safeJson));
+    document.getElementById('editBatchLabel').textContent   = b.batch_number || ('Batch #' + pk);
+    document.getElementById('editBatchNumber').value        = b.batch_number  || '';
+    document.getElementById('editBatchExpiry').value        = b.expiry_date   || '';
+    document.getElementById('editBatchPrice').value         = b.purchase_price || '';
+    document.getElementById('editBatchSupplier').value      = b.supplier_id   || '';
+    document.getElementById('batchEditModal').classList.add('open');
 }
 
-// ── Barcode scan inside stock forms ──────────────────────
-let formScannerTab = null;
-let formCodeReader = null;
-
-function openFormScanner(tab) {
-    formScannerTab = tab;
-    const bar = document.getElementById(`${tab}_scan_bar`);
-    if (bar) { bar.classList.add('show'); document.getElementById(`${tab}_scan_input`).focus(); if (typeof ZXing !== 'undefined') startFormCamera(tab); }
-}
-function closeFormScanner(tab) {
-    stopFormCamera();
-    const bar = document.getElementById(`${tab}_scan_bar`);
-    if (bar) bar.classList.remove('show');
-    document.getElementById(`${tab}_scan_input`).value = '';
-}
-function startFormCamera(tab) {
-    stopFormCamera();
-    formCodeReader = new ZXing.BrowserMultiFormatReader();
-    const videoEl = document.getElementById(`${tab}_scan_video`);
-    if (!videoEl) return;
-    formCodeReader.listVideoInputDevices().then(devices => {
-        if (!devices.length) return;
-        return formCodeReader.decodeFromVideoDevice(devices[devices.length-1].deviceId, videoEl, result => { if (result) handleFormScan(tab, result.getText()); });
-    }).catch(() => {});
-}
-function stopFormCamera() { if (formCodeReader) { formCodeReader.reset(); formCodeReader = null; } }
-function handleFormScan(tab, barcode) {
-    stopFormCamera();
-    document.getElementById(`${tab}_scan_input`).value = barcode;
-    fetch(MEDICINE_SEARCH_URL + '?q=' + encodeURIComponent(barcode))
-        .then(r => r.json())
-        .then(data => {
-            if (data.results.length) { selectMedicine(tab, data.results[0]); closeFormScanner(tab); showToast(`Found: ${data.results[0].medicine_name}`, 'success'); }
-            else showToast(`Barcode "${barcode}" not found.`, 'error');
-        }).catch(() => showToast('Barcode lookup failed.', 'error'));
-}
-function submitFormScan(tab) {
-    const val = document.getElementById(`${tab}_scan_input`).value.trim();
-    if (val) handleFormScan(tab, val);
+function submitBatchEdit() {
+    if (!editingBatchPk) return;
+    const payload = {
+        batch_number:   document.getElementById('editBatchNumber').value.trim(),
+        expiry_date:    document.getElementById('editBatchExpiry').value,
+        purchase_price: document.getElementById('editBatchPrice').value,
+        supplier_id:    document.getElementById('editBatchSupplier').value,
+    };
+    fetch(BATCH_EDIT_URL + editingBatchPk + '/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeBatchModal('edit');
+            showToast(data.message, 'success');
+            // Refresh batch list for whichever tab is active
+            const activeMed = currentStockData[getActiveTab()];
+            if (activeMed) {
+                fetch(MEDICINE_INFO_URL + '?pk=' + activeMed.pk)
+                    .then(r => r.json())
+                    .then(d => { if (d.found) renderBatchList(getActiveTab(), d.batches || []); });
+            }
+        } else {
+            showToast(data.error || 'Could not save changes.', 'error');
+        }
+    })
+    .catch(() => showToast('Network error.', 'error'));
 }
 
-// ── Adjust diff ───────────────────────────────────────────
+// ── Batch Delete Modal ────────────────────────────────────
+let deletingBatchPk = null;
+
+function openBatchDelete(pk, batchLabel, qty) {
+    deletingBatchPk = pk;
+    document.getElementById('deleteBatchLabel').textContent = batchLabel;
+    document.getElementById('deleteBatchQty').textContent   = qty;
+    document.getElementById('deleteBatchReason').value      = '';
+    document.getElementById('batchDeleteModal').classList.add('open');
+}
+
+function submitBatchDelete() {
+    if (!deletingBatchPk) return;
+    const reason = document.getElementById('deleteBatchReason').value.trim();
+    fetch(BATCH_DELETE_URL + deletingBatchPk + '/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeBatchModal('delete');
+            showToast(data.message, 'success');
+            // Refresh batch list + update stock display
+            const tab      = getActiveTab();
+            const activeMed = currentStockData[tab];
+            if (activeMed) {
+                activeMed.stock_quantity = data.new_total_stock;
+                const stockEl = document.getElementById(`${tab}_info_stock`);
+                if (stockEl) stockEl.textContent = `${data.new_total_stock} units`;
+                fetch(MEDICINE_INFO_URL + '?pk=' + activeMed.pk)
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.found) {
+                            currentStockData[tab] = { ...activeMed, ...d };
+                            renderBatchList(tab, d.batches || []);
+                            if (tab === 'adj') {
+                                document.getElementById('adj_new_qty').value = d.stock_quantity;
+                                calcDiff();
+                            }
+                        }
+                    });
+            }
+        } else {
+            showToast(data.error || 'Could not remove batch.', 'error');
+        }
+    })
+    .catch(() => showToast('Network error.', 'error'));
+}
+
+function closeBatchModal(type) {
+    document.getElementById(type === 'edit' ? 'batchEditModal' : 'batchDeleteModal').classList.remove('open');
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+function getActiveTab() {
+    if (!document.getElementById('pane-in').classList.contains('active')  &&
+        !document.getElementById('pane-out').classList.contains('active')) return 'adj';
+    if (document.getElementById('pane-out').classList.contains('active')) return 'out';
+    return 'in';
+}
+
+// ── Adjust ────────────────────────────────────────────────
 function calcDiff() {
     const newQty  = parseInt(document.getElementById('adj_new_qty').value || 0);
     const current = currentStockData['adj']?.stock_quantity ?? null;
@@ -628,12 +813,38 @@ function toggleOutFields(type) {
     document.getElementById('dispenseFields').style.display = type === 'out' ? '' : 'none';
 }
 
-// ── Pagination per-page ───────────────────────────────────
+// ── Pagination ────────────────────────────────────────────
 function changePerPage(value) {
     const url = new URL(window.location.href);
     url.searchParams.set('per_page', value);
     url.searchParams.delete('page');
     window.location.href = url.toString();
+}
+
+// ── Form Scanner ────────────────────────────────────────
+function openFormScanner(tab) {
+    const bar = document.getElementById(`${tab}_scan_bar`);
+    const input = document.getElementById(`${tab}_scan_input`);
+    if (bar && input) {
+        bar.classList.add('open');
+        input.focus();
+    }
+}
+
+function closeFormScanner(tab) {
+    const bar = document.getElementById(`${tab}_scan_bar`);
+    if (bar) bar.classList.remove('open');
+}
+
+function submitFormScan(tab) {
+    const input = document.getElementById(`${tab}_scan_input`);
+    if (!input) return;
+    const barcode = input.value.trim();
+    if (!barcode) return;
+    // Search for medicine by barcode
+    searchMedicines(tab, barcode);
+    closeFormScanner(tab);
+    input.value = '';
 }
 
 // ── Toast ─────────────────────────────────────────────────

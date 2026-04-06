@@ -375,7 +375,6 @@ def inventory_view(request):
                                    expiry_date__lte=expiry_threshold,
                                    expiry_date__gte=today).values('medicine').distinct().count(),
         'today': today,
-        # 'medicines': medicines,
         'can_manage': is_staff_or_admin(request.user),
         'can_admin': is_admin(request.user),
     }
@@ -887,13 +886,14 @@ def stock_medicine_info(request):
         # All active batches for the batch list in the UI
         batches = [
             {
-                'pk':            b.pk,
-                'batch_number':  b.batch_number or '—',
-                'expiry_date':   str(b.expiry_date) if b.expiry_date else '',
-                'quantity':      b.quantity,
-                'purchase_price':str(b.purchase_price),
-                'is_expired':    b.is_expired,
-                'is_expiring':   b.is_expiring_soon,
+                'pk':             b.pk,
+                'batch_number':   b.batch_number or '—',
+                'expiry_date':    str(b.expiry_date) if b.expiry_date else '',
+                'quantity':       b.quantity,
+                'purchase_price': str(b.purchase_price),
+                'supplier_id':    b.supplier_id or '',
+                'is_expired':     b.is_expired,
+                'is_expiring':    b.is_expiring_soon,
             }
             for b in m.batches.filter(quantity__gt=0).order_by(
                 F('expiry_date').asc(nulls_last=True), 'received_at'
@@ -1378,13 +1378,11 @@ def reports_view(request):
     monthly_cost_labels = json.dumps([str(m['month'].date()) for m in monthly_cost])
     monthly_cost_values = json.dumps([float(m['total_cost'] or 0) for m in monthly_cost])
 
-    # FIXED: Removed 'medicine__purchase_price' from values - use purchase_price from StockMovement instead
     profit_by_medicine = list(
         StockMovement.objects.filter(
             movement_type='out',
             created_at__date__gte=date_from,
             created_at__date__lte=date_to,
-            purchase_price__isnull=False,  # Only include movements with cost data
         ).values('medicine__medicine_name', 'medicine__strength')
         .annotate(
             units_sold=Sum(ExpressionWrapper(-F('quantity'), output_field=FloatField())),
@@ -1392,7 +1390,7 @@ def reports_view(request):
                 -F('quantity') * F('medicine__selling_price'), output_field=DecimalField()
             )),
             cogs=Sum(ExpressionWrapper(
-                -F('quantity') * F('purchase_price'), output_field=DecimalField()  # Use StockMovement's purchase_price
+                -F('quantity') * F('purchase_price'), output_field=DecimalField()
             )),
         ).order_by('-revenue')[:15]
     )
@@ -2091,3 +2089,88 @@ def category_create_ajax(request):
         return JsonResponse({'pk': existing.pk, 'name': existing.name, 'existed': True})
     category = MedicineCategory.objects.create(name=name)
     return JsonResponse({'pk': category.pk, 'name': category.name, 'existed': False})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BATCH MANAGEMENT — AJAX edit + soft-delete
+# ─────────────────────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+@user_passes_test(is_staff_or_admin, login_url='dashboard')
+def batch_edit_view(request, pk):
+    """
+    AJAX POST — edit a MedicineStock batch's correctable fields:
+    batch_number, expiry_date, purchase_price, supplier.
+    Quantity is NOT editable here — use Stock In / Adjust for that.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method.'}, status=405)
+    try:
+        batch = get_object_or_404(MedicineStock, pk=pk)
+        data  = json.loads(request.body)
+
+        batch.batch_number   = data.get('batch_number', batch.batch_number)
+        batch.purchase_price = data.get('purchase_price', batch.purchase_price)
+        expiry = data.get('expiry_date', '')
+        batch.expiry_date = expiry if expiry else None
+        supplier_id = data.get('supplier_id', '')
+        batch.supplier_id = supplier_id if supplier_id else None
+        batch.save()
+
+        return JsonResponse({
+            'success':        True,
+            'batch_number':   batch.batch_number,
+            'expiry_date':    str(batch.expiry_date) if batch.expiry_date else '',
+            'purchase_price': str(batch.purchase_price),
+            'supplier_id':    batch.supplier_id or '',
+            'message':        f'Batch "{batch.batch_number or pk}" updated successfully.',
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+
+@login_required(login_url='login')
+@user_passes_test(is_staff_or_admin, login_url='dashboard')
+def batch_delete_view(request, pk):
+    """
+    AJAX POST — soft-delete a MedicineStock batch by zeroing its quantity.
+    The batch row is kept for audit trail (StockMovement FK references it).
+    Creates a StockMovement log entry to record the removal.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method.'}, status=405)
+    try:
+        batch    = get_object_or_404(MedicineStock, pk=pk)
+        medicine = batch.medicine
+        reason   = json.loads(request.body).get('reason', '').strip() if request.body else ''
+
+        if batch.quantity == 0:
+            return JsonResponse({'error': 'Batch is already empty.'}, status=400)
+
+        old_total = medicine.stock_quantity
+        removed   = batch.quantity
+        batch.quantity = 0
+        batch.save()
+        new_total = medicine.stock_quantity   # recomputed via property
+
+        StockMovement.objects.create(
+            medicine        = medicine,
+            batch           = batch,
+            movement_type   = 'adjust',
+            quantity        = -removed,
+            quantity_before = old_total,
+            quantity_after  = new_total,
+            batch_number    = batch.batch_number,
+            expiry_date     = batch.expiry_date,
+            notes           = reason or f'Batch removed via Batch Management (Batch: {batch.batch_number or pk})',
+            performed_by    = request.user,
+        )
+
+        return JsonResponse({
+            'success':        True,
+            'removed':        removed,
+            'new_total_stock':new_total,
+            'message':        f'Batch "{batch.batch_number or pk}" removed. {removed} units deducted.',
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
