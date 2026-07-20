@@ -655,11 +655,11 @@ function renderBatchList(tab, batches) {
             <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
                 <span class="bi-qty">${b.quantity} units</span>
                 <div class="batch-actions" onclick="event.stopPropagation()">
-                    <button class="btn-batch-action edit-batch" title="Edit batch details"
+                    <button type="button" class="btn-batch-action edit-batch" title="Edit batch details"
                             onclick="openBatchEdit(${b.pk}, '${safeJson}')">
                         <i class="fas fa-pen"></i>
                     </button>
-                    <button class="btn-batch-action del-batch" title="Remove batch (zero out)"
+                    <button type="button" class="btn-batch-action del-batch" title="Remove batch (zero out)"
                             onclick="openBatchDelete(${b.pk}, '${escHtml(b.batch_number || 'Batch ' + b.pk)}', ${b.quantity})">
                         <i class="fas fa-trash-can"></i>
                     </button>
